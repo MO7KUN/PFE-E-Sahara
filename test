@@ -1,0 +1,63 @@
+$target_dir = "Images/Products/";
+if (!file_exists($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
+
+    // Get the path to save the uploaded file
+    $target_file = $target_dir . basename($_FILES["file"]["name"]);
+
+    // Initialize a flag for upload success
+    $uploadOk = 1;
+
+    // Check if the file is an actual image
+    $check = getimagesize($_FILES["file"]["tmp_name"]);
+    if ($check !== false) {
+        echo "File is an image - " . $check["mime"] . ".<br>";
+        $uploadOk = 1;
+    } else {
+        echo "File is not an image.<br>";
+        $uploadOk = 0;
+    }
+
+    // Check if the file already exists
+    if (file_exists($target_file)) {
+        echo "Sorry, file already exists.<br>";
+        $uploadOk = 0;
+    }
+
+    // Check file size (limit to 5MB for example)
+    if ($_FILES["file"]["size"] > 5000000) {
+        echo "Sorry, your file is too large.<br>";
+        $uploadOk = 0;
+    }
+
+    // Allow certain file formats
+    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
+        echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.<br>";
+        $uploadOk = 0;
+    }
+
+    // Check if $uploadOk is set to 0 by an error
+    if ($uploadOk == 0) {
+        echo "Sorry, your file was not uploaded.<br>";
+    } else {
+        // Try to move the uploaded file to the target directory
+        if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)) {
+            echo "The file " . htmlspecialchars(basename($_FILES["file"]["name"])) . " has been uploaded.<br>";
+
+            // Insert the file path into the database
+            $stmt = $conn->prepare("INSERT INTO uploads (file_path) VALUES (?)");
+            $stmt->bind_param("s", $target_file);
+
+            if ($stmt->execute()) {
+                echo "The file path has been saved in the database.<br>";
+            } else {
+                echo "Error: " . $stmt->error . "<br>";
+            }
+
+            $stmt->close();
+        } else {
+            echo "Sorry, there was an error uploading your file.<br>";
+        }
+    }

@@ -1,0 +1,208 @@
+.container {
+    width: 80%;
+}
+.Background{
+    background-color: #fffeee !important;
+}
+.form {
+    border-radius: 25px;
+}
+
+.a {
+    margin-right: 25px;
+}
+
+.card {
+    min-width: 200px;
+    margin-top: 20px;
+    border-radius: 25px;
+    padding: 0px;
+}
+
+.card-img-top {
+    border-radius: 25px 25px 0px 0px;
+    width: 100%;
+    height: 200px;
+}
+
+a:hover {
+    color: aliceblue;
+}
+
+a:active {
+    color: yellow;
+}
+
+a::after {
+    color: whitesmoke;
+
+}
+
+.input {
+    border-radius: 25px;
+    border-color: transparent;
+}
+
+button {
+    border-radius: 25px;
+    border-color: transparent;
+}
+
+.table {
+    margin-top: 20px;
+    border-radius: 25px;
+}
+
+.margin {
+    margin-top: 20px;
+}
+
+.margin2 {
+    margin-bottom: 20px;
+}
+
+.marg {
+    margin-right: 15px;
+}
+
+.pad {
+    padding-bottom: 20px;
+}
+
+.img {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    width: 200px;
+    height: 200px;
+    border-radius: 100%;
+}
+
+.button {
+    border-radius: 25px;
+    border-color: transparent;
+}
+
+.text {
+    font-size: 50px;
+}
+
+.margin3 {
+    margin: auto;
+}
+
+.radius {
+    border-radius: 25px;
+}
+
+.w50 {
+    width: 50%;
+}
+
+.column {
+    width: 20%;
+    text-align: center;
+}
+
+.GG2 {
+    display: flex;
+    flex-wrap: wrap;
+
+}
+
+.w30 {
+    width: 30%;
+}
+
+.w40 {
+    width: 40%;
+}
+
+.w15 {
+    width: 0px;
+}
+
+.bb2 {
+    border: 100px;
+    border-color: black;
+    width: 100%;
+    margin-right: 2.5%;
+}
+
+.bb {
+    border-radius: 25px;
+    border: 100px;
+    border-color: black;
+    width: 45%;
+    margin-right: 2.5%;
+    height: 50px;
+}
+
+
+
+    @media (max-width: 991.98px) {
+        .GG2 {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hh {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .w30 {
+            width: 100%;
+        }
+
+        .w40 {
+            width: 100%;
+        }
+
+        .bb {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 1232px) {
+        .GG2 {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hh {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .w30 {
+            width: 100%;
+        }
+
+        .w40 {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .a {
+            visibility: hidden;
+        }
+
+        .a::after {
+            border-radius: 100px;
+            width: 150px;
+            height: 150px;
+            background-color: #007E7E;
+            content: '+';
+            visibility: visible;
+            /*text-align: center;*/
+        }
+
+        .bb {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+    }
