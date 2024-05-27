@@ -221,9 +221,11 @@ if (isset($_POST['ID_Produit'])) {
                 <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
                     <i class="fas fa-user-edit"></i>
                 </a>
-                <a href="edit-product.php" class="btn btn-outline-info mr-2">
+                <?php if ($_SESSION['role_user'] == 'admin') { ?>
+                    <a href="edit-product.php" class="btn btn-outline-info mr-2">
                     <i class="fas fa-edit"></i>
                 </a>
+                <?php } ?>
                 <a href="index.php" class="btn btn-outline-danger mr-2">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
