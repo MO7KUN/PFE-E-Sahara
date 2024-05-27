@@ -160,7 +160,7 @@ session_start();
                     <i class="fas fa-plus-square"></i>
                 </a>
                 <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
-                    <i class="fas fa-edit"></i>
+                    <i class="fas fa-user-edit"></i>
                 </a>
                 <a href="Edit-Produit.php" class="btn btn-outline-info mr-2">
                     <i class="fas fa-edit"></i>

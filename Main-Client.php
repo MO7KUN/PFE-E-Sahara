@@ -1,11 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
 <?php
 include_once('Connection Open.php');
-$produit = "";
 session_start();
+
+// Check for form submission and handle accordingly
+if (isset($_POST['ID_Produit'])) {
+    if (empty($_SESSION['UserName'])) {
+        // Redirect to login page if client is not logged in
+        header('Location: index.php');
+        exit();
+    }
+
+    $product_id = intval($_POST['ID_Produit']);
+    $username = $_SESSION['UserName'];
+    $username = '"' . $username . '"';
+    // Check if the product is already in the cart
+    $checkCartQuery = "SELECT pan.ID_Panier FROM panier pan
+                       INNER JOIN panierproduit pp ON pan.ID_Panier = pp.ID_Panier 
+                       WHERE pan.UserName = $username AND pp.ID_Produit = $product_id";
+    try {
+        $result = mysqli_query($conn, $checkCartQuery);
+        $row = mysqli_fetch_assoc($result);
+        $idpanier = intval($row['ID_Panier']);
+    } catch (Exception $e) {
+        die("Error executing query: " . $e->getMessage());
+    }
+
+    if (isset($idpanier)) {
+        // If the product is already in the cart, update the quantity
+        $updateCartQuery = "UPDATE panierproduit SET quantite_produit = quantite_produit + 1 WHERE ID_Panier = ? AND ID_Produit = ?";
+        $stmt = $conn->prepare($updateCartQuery);
+        if ($stmt === false) {
+            die("Error preparing query: " . $conn->error);
+        }
+        $stmt->bind_param("ii", $idpanier, $product_id);
+    } else {
+        // If the product is not in the cart, add it with quantity 1
+        $addCartQuery = "INSERT INTO panierproduit (ID_Panier, ID_Produit, quantite_produit) VALUES (?, ?, 1)";
+        $stmt = $conn->prepare($addCartQuery);
+        if ($stmt === false) {
+            die("Error preparing query: " . $conn->error);
+        }
+        // Assuming ID_Panier is obtained elsewhere or default to a value
+        $stmt->bind_param("ii", $idpanier, $product_id);
+    }
+
+    if ($stmt->execute()) {
+        // Redirect back to the main page or product page with success message
+        header('Location: Main-Client.php?status=success');
+    } else {
+        // Redirect back to the main page or product page with error message
+        header('Location: Main-Client.php?status=error');
+    }
+
+    $stmt->close();
+    mysqli_close($conn);
+    exit();
+}
 ?>
 
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -165,6 +219,9 @@ session_start();
                     </a>
                 <?php } ?>
                 <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
+                    <i class="fas fa-user-edit"></i>
+                </a>
+                <a href="edit-product.php" class="btn btn-outline-info mr-2">
                     <i class="fas fa-edit"></i>
                 </a>
                 <a href="index.php" class="btn btn-outline-danger mr-2">
@@ -180,6 +237,7 @@ session_start();
     <div class="container mt-4">
         <div class="row" id="products">
             <?php
+            $produit = "";
             if (isset($_GET['SrchPro'])) {
                 $produit = $_GET['SrchPro'];
             }
@@ -196,7 +254,7 @@ session_start();
                             <p class="card-text"><?php echo $row['description_produit']; ?></p>
                             <div class="btn-group mt-auto">
                                 <form action="" method="post" class="mt-2">
-                                    <input type="text" name="ID_Produit" id="ID_Produit" value="<?php echo $row['ID_Produit']; ?>" hidden>
+                                    <input type="hidden" name="ID_Produit" value="<?php echo $row['ID_Produit']; ?>">
                                     <button type="submit" class="btn btn-success btn-block">Ajouter au panier</button>
                                 </form>
                             </div>
@@ -205,64 +263,9 @@ session_start();
                 </div>
             <?php
             }
-            if (isset($_POST['ID_Produit'])) {
-                if ($_SESSION['UserName'] == '') {
-                    // Redirect to login page if client is not logged in
-                    header('Location: index.php');
-                    exit();
-                }
-
-
-
-                $product_id = intval($_POST['ID_Produit']);
-                $UserName = '"' . $_SESSION['UserName'] . '"';
-                // Check if the product is already in the cart
-                $checkCartQuery = "SELECT ID_Panier FROM panier pan,
-                        INNER JOIN panierproduit pp ON pan.ID_Panier = pp.ID_Panier 
-                        WHERE pan.UserName = $username AND pp.ID_Produit = $product_id";
-                try {
-                    $result = mysqli_query($conn, $checkCartQuery);
-                    $row = mysqli_fetch_assoc($result);
-                    $idpanier = intval($row['ID_Panier']);
-                } catch (Exception $e) {
-                    die("Error executing query: " . $e->getMessage());
-                }
-
-                if (isset($idpanier)) {
-                    // If the product is already in the cart, update the quantity
-                    $updateCartQuery = "UPDATE panierproduit SET quantite_produit = quantite_produit + 1 WHERE ID_Panier = ? AND ID_Produit = ?";
-                    $stmt = $conn->prepare($updateCartQuery);
-                    if ($stmt === false) {
-                        die("Error preparing query: " . $conn->error);
-                    }
-                    $stmt->bind_param("ii", $idpanier, $product_id);
-                } else {
-                    // If the product is not in the cart, add it with quantity 1
-                    $addCartQuery = "INSERT INTO panierproduit (ID_Produit, quantite_produit) VALUES (?, 1) where ID_Panier = ?";
-                    $stmt = $conn->prepare($addCartQuery);
-                    if ($stmt === false) {
-                        die("Error preparing query: " . $conn->error);
-                    }
-                    $stmt->bind_param("ii", $product_id, $idpanier);
-                }
-
-                if ($stmt->execute()) {
-                    // Redirect back to the main page or product page with success message
-                    header('Location: Main-Client.php?status=success');
-                } else {
-                    // Redirect back to the main page or product page with error message
-                    header('Location: Main-Client.php?status=error');
-                }
-
-                $stmt->close();
-            } else {
-                header('Location: Main-Client.php?status=error');
-            }
 
             // Close connection
             mysqli_close($conn); ?>
-            ?>
-
         </div>
     </div>
     <script>
@@ -287,5 +290,4 @@ session_start();
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit-id.js" crossorigin="anonymous"></script>
 </body>
-
 </html>
