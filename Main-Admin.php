@@ -193,7 +193,7 @@ session_start();
                             <p class="font-weight-bold card-text"><?php echo $row['prix_unitaire'] . " Dh"; ?></p>
                             <p class="card-text"><?php echo $row['description_produit']; ?></p>
                             <div class="btn-group mt-auto">
-                                <form action="add-Produit.php" method="GET" class="mt-2">
+                                <form action="Edit-Produit.php" method="GET" class="mt-2">
                                     <input type="hidden" name="ID_Produit" value="<?php echo $row['ID_Produit']; ?>">
                                     <button type="submit" class="btn btn-primary btn-block">Modifier le produit</button>
                                 </form>
