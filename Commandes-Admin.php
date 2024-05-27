@@ -31,6 +31,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <title>E-Sahara Commandes</title>
     <style>
@@ -140,30 +141,47 @@
 </head>
 
 <body class="light-mode">
-    <header>
+<header>
         <div class="container d-flex justify-content-between align-items-center header-container">
             <h1 class="font-weight-bold mb-0">E-Sahara</h1>
             <div class="search-bar-container">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Chercher un produit" aria-label="Chercher un produit" aria-describedby="basic-addon2">
+                <form class="input-group" method="GET">
+                    <input type="text" name="SrchPro" class="form-control" placeholder="Chercher un produit" aria-label="Chercher un produit" aria-describedby="basic-addon2">
                     <div class="input-group-append">
                         <button class="btn btn-primary" type="button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                            </svg>
+                            <i class="fas fa-search"></i>
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
             <div class="d-flex nav-buttons align-items-center">
-                <a href="Main-Admin.php" class="btn btn-outline-primary mr-2">Main</a>
-                <a href="Panier.php" class="btn btn-outline-primary mr-2">Panier</a>
-                <a href="Commandes.php" class="btn btn-outline-primary mr-2">Commandes</a>
-                <a href="index.php" class="btn btn-outline-danger mr-2">Log Out</a>
-                <button class="btn btn-dark btn-dark-mode" id="dark-mode-toggle">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
-                        <path d="M6 0a6 6 0 0 0 0 12 5.96 5.96 0 0 0 3.9-1.484 6.993 6.993 0 0 1-1.528-.164A5 5 0 0 1 7 1 5.977 5.977 0 0 0 6 0zM4 2a4 4 0 1 1-1 7.93c.29-.33.561-.684.805-1.063A3 3 0 1 0 3 4a4 4 0 0 1 1-2z" />
-                    </svg>
+                <a href="Main-Admin.php" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-home"></i>
+                </a>
+                <a href="Clients.php" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-users"></i>
+                </a>
+                <a href="Commandes-Admin.php" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-box"></i>
+                </a>
+                <a href="Main-Client.php" class="btn btn-outline-secondary mr-2">
+                    <i class="fas fa-user"></i>
+                </a>
+                
+                <a href="add-Produit.php" class="btn btn-outline-warning mr-2">
+                    <i class="fas fa-plus-square"></i>
+                </a>
+                <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="Edit-Produit.php" class="btn btn-outline-info mr-2">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="index.php" class="btn btn-outline-danger mr-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+                <button class="btn btn-dark btn-dark-mode">
+                    <i class="fas fa-moon"></i>
                 </button>
             </div>
         </div>
@@ -220,6 +238,7 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit-id.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 </body>
 
 </html>

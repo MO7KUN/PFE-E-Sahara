@@ -9,6 +9,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <title>E-Sahara Admin</title>
     <style>
@@ -114,22 +115,50 @@
     <header>
         <div class="container d-flex justify-content-between align-items-center header-container">
             <h1 class="font-weight-bold mb-0">E-Sahara</h1>
+            <div class="search-bar-container">
+                <form class="input-group" method="GET">
+                    <input type="text" name="SrchPro" class="form-control" placeholder="Chercher un produit" aria-label="Chercher un produit" aria-describedby="basic-addon2">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
             <div class="d-flex nav-buttons align-items-center">
-                <a href="Main-Admin.php" class="btn btn-outline-primary mr-2">Main</a>
-                <a href="Clients.php" class="btn btn-outline-primary mr-2">Clients</a>
-                <a href="Commandes.php" class="btn btn-outline-primary mr-2">Commandes</a>
-                <a href="index.php" class="btn btn-outline-danger mr-2">Log Out</a>
+                <a href="Main-Admin.php" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-home"></i>
+                </a>
+                <a href="Clients.php" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-users"></i>
+                </a>
+                <a href="Commandes-Admin.php" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-box"></i>
+                </a>
+                <a href="Main-Client.php" class="btn btn-outline-secondary mr-2">
+                    <i class="fas fa-user"></i>
+                </a>
+                <a href="add-Produit.php" class="btn btn-outline-warning mr-2">
+                    <i class="fas fa-plus-square"></i>
+                </a>
+                <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="Edit-Produit.php" class="btn btn-outline-info mr-2">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="index.php" class="btn btn-outline-danger mr-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
                 <button class="btn btn-dark btn-dark-mode">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
-                        <path d="M6 0a6 6 0 1 0 0 12 5.96 5.96 0 0 0 3.9-1.484 6.993 6.993 0 0 1-1.528-.164A5 5 0 0 1 7 1 5.977 5.977 0 0 0 6 0zM4 2a4 4 0 1 1-1 7.93c.29-.33.561-.684.805-1.063A3 3 0 1 0 3 4a4 4 0 0 1 1-2z" />
-                    </svg>
+                    <i class="fas fa-moon"></i>
                 </button>
             </div>
         </div>
     </header>
     <div class="container mt-4">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <h2 class="mb-4">Ajouter un Produit</h2>
                 <form action="" method="post">
                     <div class="form-group">
@@ -152,14 +181,14 @@
                         <label for="Photo" class="bb margin">Photo :</label>
                         <input id="Photo" name="Photo" type="file" placeholder=" Model" class="form-control">
                     </div>
-                    <input type="submit" value=" Ajouter " class="text-dark btn btn-outline-secondary mr-2">
+                    <input type="submit" value=" Ajouter " class="text-dark btn btn-outline-secondary mr-2 col-12">
                 </form>
                 <?php
                 if (!(isset($_POST['Libelle']) & isset($_POST['Prix']) & isset($_POST['Photo']) & isset($_POST['Description']) & isset($_POST['Quantite']))) {
                 ?>
                     <p class="bb2 bg-warning text-center margin">Veuillez remplir tous les champs</p>
                     <?php
-                    
+
                 } else {
                     $libelle = $_POST['Libelle'];
                     $prix = $_POST['Prix'];
@@ -181,32 +210,7 @@
                 ?>
             </div>
 
-            <div class="col-md-6">
-                <h2 class="mb-4">Modifier un Produit</h2>
-                <form action="" method="post">
-                    <div class="form-group">
-                        <label for="Libelle" class="bb margin">Libelle :</label>
-                        <input name="Libelle" id="Libelle" type="text" placeholder=" Libelle" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="Prix" class="bb margin">Prix :</label>
-                        <input name="Prix" id="Prix" type="text" placeholder=" Prix" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="Quantite" class="bb margin">Quantite :</label>
-                        <input name="Quantite" id="Quantite" type="text" placeholder=" Quantite" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="Description" class="bb margin">Description :</label>
-                        <input name="Description" id="Description" type="text" placeholder=" Description" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="Photo" class="bb margin">Photo :</label>
-                        <input id="Photo" name="Photo" type="file" placeholder=" Model" class="form-control">
-                    </div>
-                    <input type="submit" value=" Ajouter " class="text-dark btn btn-outline-secondary mr-2">
-                </form>
-            </div>
+
         </div>
     </div>
     <script>
@@ -229,6 +233,7 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit-id.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 </body>
 
 </html>

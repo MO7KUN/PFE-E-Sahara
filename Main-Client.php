@@ -11,6 +11,7 @@ session_start();
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <title>E-Sahara Client</title>
     <style>
@@ -126,7 +127,8 @@ session_start();
             color: #000000;
             /* Black color */
         }
-        .w-9{
+
+        .w-9 {
             width: 90%;
             margin: auto auto;
         }
@@ -135,38 +137,46 @@ session_start();
 
 <body class="light-mode">
     <header>
-        <div class="w-9 d-flex justify-content-between align-items-center header-container">
+        <div class="container d-flex justify-content-between align-items-center header-container">
             <h1 class="font-weight-bold mb-0">E-Sahara</h1>
             <div class="search-bar-container">
                 <form class="input-group" method="GET">
                     <input type="text" name="SrchPro" class="form-control" placeholder="Chercher un produit" aria-label="Chercher un produit" aria-describedby="basic-addon2">
                     <div class="input-group-append">
                         <button class="btn btn-primary" type="button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                            </svg>
+                            <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </form>
             </div>
             <div class="d-flex nav-buttons align-items-center">
-                <a href="Main-Client.php" class="btn btn-outline-primary mr-2">Main</a>
-                <a href="Panier.php" class="btn btn-outline-primary mr-2">Panier</a>
-                <a href="Commandes-Client.php" class="btn btn-outline-primary mr-2">Commandes</a>
-                <?php 
-                if ($_SESSION['role_user'] == 'admin') { ?>
-                    <a href="Main-Admin.php" class="btn btn-outline-secondary mr-2">Switch to admin</a>
+                <a href="Main-Client.php" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-home"></i>
+                </a>
+                <a href="Panier.php" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-shopping-cart"></i>
+                </a>
+                <a href="Commandes-Client.php" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-box"></i>
+                </a>
+                <?php if ($_SESSION['role_user'] == 'admin') { ?>
+                    <a href="Main-Admin.php" class="btn btn-outline-secondary mr-2">
+                        <i class="fas fa-user-shield"></i>
+                    </a>
                 <?php } ?>
-                <a href="Edit-client.php" class="btn btn-outline-warning mr-2">Edit Infos</a>
-                <a href="index.php" class="btn btn-outline-danger mr-2">Log Out</a>
+                <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="index.php" class="btn btn-outline-danger mr-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
                 <button class="btn btn-dark btn-dark-mode">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
-                        <path d="M6 0a6 6 0 0 0 0 12 5.96 5.96 0 0 0 3.9-1.484 6.993 6.993 0 0 1-1.528-.164A5 5 0 0 1 7 1 5.977 5.977 0 0 0 6 0zM4 2a4 4 0 1 1-1 7.93c.29-.33.561-.684.805-1.063A3 3 0 1 0 3 4a4 4 0 0 1 1-2z" />
-                    </svg>
+                    <i class="fas fa-moon"></i>
                 </button>
             </div>
         </div>
     </header>
+
     <div class="container mt-4">
         <div class="row" id="products">
             <?php
@@ -185,7 +195,7 @@ session_start();
                             <p class="font-weight-bold card-text"><?php echo $row['prix_unitaire'] . " Dh"; ?></p>
                             <p class="card-text"><?php echo $row['description_produit']; ?></p>
                             <div class="btn-group mt-auto">
-                                <form action="add_to_cart.php" method="POST" class="mt-2">
+                                <form action="" method="post" class="mt-2">
                                     <input type="text" name="ID_Produit" id="ID_Produit" value="<?php echo $row['ID_Produit']; ?>" hidden>
                                     <button type="submit" class="btn btn-success btn-block">Ajouter au panier</button>
                                 </form>
@@ -196,11 +206,63 @@ session_start();
             <?php
             }
             if (isset($_POST['ID_Produit'])) {
-                $_SESSION['ID_Produit'] = $_POST['ID_Produit'];
+                if ($_SESSION['UserName'] == '') {
+                    // Redirect to login page if client is not logged in
+                    header('Location: index.php');
+                    exit();
+                }
+                
+                
+                    
+                        $product_id = intval($_POST['ID_Produit']);
+                        $UserName ='"'. $_SESSION['UserName'].'"';
+                        // Check if the product is already in the cart
+                        $checkCartQuery = "SELECT ID_Panier FROM panier pan,
+                        INNER JOIN panierproduit pp ON pan.ID_Panier = pp.ID_Panier 
+                        WHERE pan.UserName = $username AND pp.ID_Produit = $product_id";
+                        try {
+                        $result=mysqli_query($conn, $checkCartQuery);
+                        $row=mysqli_fetch_assoc($result);
+                        $idpanier = intval($row['ID_Panier']);
+                        } catch (Exception $e) {
+                            die("Error executing query: " . $e->getMessage());
+                        }
+                
+                        if (isset($idpanier)) {
+                            // If the product is already in the cart, update the quantity
+                            $updateCartQuery = "UPDATE panierproduit SET quantite_produit = quantite_produit + 1 WHERE ID_Panier = ? AND ID_Produit = ?";
+                            $stmt = $conn->prepare($updateCartQuery);
+                            if ($stmt === false) {
+                                die("Error preparing query: " . $conn->error);
+                            }
+                            $stmt->bind_param("ii", $idpanier, $product_id);
+                        } else {
+                            // If the product is not in the cart, add it with quantity 1
+                            $addCartQuery = "INSERT INTO panierproduit (ID_Produit, quantite_produit) VALUES (?, 1) where ID_Panier = ?";
+                            $stmt = $conn->prepare($addCartQuery);
+                            if ($stmt === false) {
+                                die("Error preparing query: " . $conn->error);
+                            }
+                            $stmt->bind_param("ii", $product_id, $idpanier);
+                        }
+                
+                        if ($stmt->execute()) {
+                            // Redirect back to the main page or product page with success message
+                            header('Location: Main-Client.php?status=success');
+                        } else {
+                            // Redirect back to the main page or product page with error message
+                            header('Location: Main-Client.php?status=error');
+                        }
+                        
+                        $stmt->close();
+            }else{
+                header('Location: Main-Client.php?status=error');
             }
 
             // Close connection
             mysqli_close($conn); ?>
+?>
+
         </div>
     </div>
     <script>
@@ -220,6 +282,7 @@ session_start();
         });
     </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit-id.js" crossorigin="anonymous"></script>

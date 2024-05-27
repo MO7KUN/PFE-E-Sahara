@@ -13,31 +13,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $product_id = intval($_SESSION['ID_Produit']);
         $UserName ='"'. $_SESSION['UserName'].'"';
         // Check if the product is already in the cart
-        $checkCartQuery = "SELECT * FROM panier WHERE UserName = ? AND ID_Produit = ?";
-        $stmt = $conn->prepare($checkCartQuery);
-        if ($stmt === false) {
-            die("Error preparing query: " . $conn->error);
-        }
-        $stmt->bind_param("si", $UserName, $product_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $checkCartQuery = "SELECT ID_Panier FROM panier pan,
+        INNER JOIN panierproduit pp ON pan.ID_Panier = pp.ID_Panier 
+        WHERE pan.UserName = $username AND pp.ID_Produit = $product_id";
+        $result=mysqli_query($conn, $checkCartQuery);
+        $row=mysqli_fetch_assoc($result);
+        $idpanier = intval($row['ID_Panier']);
 
-        if ($result->num_rows > 0) {
+        if (isset($idpanier)) {
             // If the product is already in the cart, update the quantity
-            $updateCartQuery = "UPDATE panier SET Qautite_produit = Qautite_produit + 1 WHERE UserName = ? AND ID_Produit = ?";
+            $updateCartQuery = "UPDATE panierproduit SET quantite_produit = quantite_produit + 1 WHERE ID_Panier = ? AND ID_Produit = ?";
             $stmt = $conn->prepare($updateCartQuery);
             if ($stmt === false) {
                 die("Error preparing query: " . $conn->error);
             }
-            $stmt->bind_param("si", $UserName, $product_id);
+            $stmt->bind_param("ii", $idpanier, $product_id);
         } else {
             // If the product is not in the cart, add it with quantity 1
-            $addCartQuery = "INSERT INTO panier (ID_Produit, Qautite_produit) VALUES (?, 1) where UserName = ?";
+            $addCartQuery = "INSERT INTO panierproduit (ID_Produit, quantite_produit) VALUES (?, 1) where ID_Panier = ?";
             $stmt = $conn->prepare($addCartQuery);
             if ($stmt === false) {
                 die("Error preparing query: " . $conn->error);
             }
-            $stmt->bind_param("is", $product_id, $UserName);
+            $stmt->bind_param("ii", $product_id, $idpanier);
         }
 
         if ($stmt->execute()) {
