@@ -4,6 +4,7 @@
 <head>
     <?php
     include_once('Connection Open.php');
+    session_start();
 
     ?>
     <meta charset="UTF-8">
@@ -144,9 +145,6 @@
                 </a>
                 <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
                     <i class="fas fa-user-edit"></i>
-                </a>
-                <a href="Edit-Produit.php" class="btn btn-outline-info mr-2">
-                    <i class="fas fa-edit"></i>
                 </a>
                 <a href="index.php" class="btn btn-outline-danger mr-2">
                     <i class="fas fa-sign-out-alt"></i>

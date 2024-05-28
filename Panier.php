@@ -175,7 +175,7 @@
                 <a href="index.php" class="btn btn-outline-danger mr-2">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
-                <button class="btn btn-dark btn-dark-mode">
+                <button id="dark-mode-toggle" class="btn btn-dark btn-dark-mode">
                     <i class="fas fa-moon"></i>
                 </button>
             </div>
@@ -228,19 +228,23 @@
         </div>
     </div>
     <script>
-        const btnDarkMode = document.getElementById('dark-mode-toggle');
-        const body = document.body;
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const body = document.body;
+            const btnDarkMode = document.getElementById('dark-mode-toggle');
+            const currentMode = localStorage.getItem('theme') || 'light';
+            body.classList.toggle('dark-mode', currentMode === 'dark');
+            body.classList.toggle('light-mode', currentMode === 'light');
+            btnDarkMode.classList.toggle('btn-dark', currentMode === 'dark');
+            btnDarkMode.classList.toggle('btn-primary', currentMode === 'light');
 
-        btnDarkMode.addEventListener('click', () => {
-            body.classList.toggle('light-mode');
-            body.classList.toggle('dark-mode');
-            if (body.classList.contains('dark-mode')) {
-                btnDarkMode.classList.add('btn-dark');
-                btnDarkMode.classList.remove('btn-primary');
-            } else {
-                btnDarkMode.classList.add('btn-primary');
-                btnDarkMode.classList.remove('btn-dark');
-            }
+            btnDarkMode.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+                body.classList.toggle('light-mode');
+                const newMode = body.classList.contains('dark-mode') ? 'dark' : 'light';
+                localStorage.setItem('theme', newMode);
+                btnDarkMode.classList.toggle('btn-dark', newMode === 'dark');
+                btnDarkMode.classList.toggle('btn-primary', newMode === 'light');
+            });
         });
     </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

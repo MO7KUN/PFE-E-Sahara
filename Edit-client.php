@@ -159,9 +159,6 @@
                         <i class="fas fa-user-shield"></i>
                     </a>
                 <?php } ?>
-                <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
-                    <i class="fas fa-user-edit"></i>
-                </a>
                 <a href="index.php" class="btn btn-outline-danger mr-2">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>

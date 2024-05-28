@@ -117,6 +117,7 @@
             color: #000000;
             /* Black color */
         }
+        
     </style>
 </head>
 
@@ -155,9 +156,6 @@
                 <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
                     <i class="fas fa-user-edit"></i>
                 </a>
-                <a href="Edit-Produit.php" class="btn btn-outline-info mr-2">
-                    <i class="fas fa-edit"></i>
-                </a>
                 <a href="index.php" class="btn btn-outline-danger mr-2">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
@@ -185,7 +183,7 @@
                         <div class="card-body">
                             <h4 class="card-title font-weight-bold text-black-50"><?php echo $row['nom_user'] . " " . $row['prenom_user']; ?></h4>
                             <ul class="list-unstyled mt-2">
-                                <li><i class="fas fa-phone-alt"></i> <?php echo $row['num_tel_user']; ?></li>
+                                <li class="email-text"><i class="fas fa-phone-alt"></i> <?php echo $row['num_tel_user']; ?></li>
                                 <li class="email-text"><i class="fas fa-envelope"></i> <?php echo $row['email_user']; ?></li>
                             </ul>
                             <a href="tel:<?php echo $row['num_tel_user']; ?>" class="btn btn-primary mt-3 col-6 mr-2"><i class="fas fa-phone"></i></a>
