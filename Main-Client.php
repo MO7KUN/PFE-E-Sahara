@@ -200,11 +200,6 @@ if ($countResult) {
                 <a href="Edit-client.php?UserName=<?php echo $_SESSION['UserName']; ?>" class="btn btn-outline-warning mr-2">
                     <i class="fas fa-user-edit"></i>
                 </a>
-                <?php if ($_SESSION['role_user'] == 'admin') { ?>
-                    <a href="edit-product.php" class="btn btn-outline-info mr-2">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <?php } ?>
                 <a href="index.php" class="btn btn-outline-danger mr-2">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
