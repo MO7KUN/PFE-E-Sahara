@@ -87,9 +87,9 @@ $_SESSION['role_user'] = "";
 
             // Check if the login is email or username
             if (strpos($login, "@") !== false) {
-                $sql = "SELECT email_user, password_user, role_user FROM user WHERE email_user = ?";
+                $sql = "SELECT * FROM user WHERE email_user = ?";
             } else {
-                $sql = "SELECT UserName, password_user, role_user FROM user WHERE UserName = ?";
+                $sql = "SELECT * FROM user WHERE UserName = ?";
             }
 
             // Prepare and bind the SQL statement

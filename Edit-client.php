@@ -5,7 +5,24 @@
     <?php
     include_once('Connection Open.php');
     session_start();
-    $username = $_SESSION['UserName'];
+    if (!isset($_SESSION['UserName'])) {
+        header("Location: index.php");
+        exit();
+    } else {
+        $UserName = $_SESSION['UserName'];
+        $query = "SELECT * FROM user WHERE UserName = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("s", $UserName);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+        } else {
+            echo "User not found.";
+            exit();
+        }
+        $stmt->close();
+    }
     ?>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -114,7 +131,7 @@
 </head>
 
 <body class="light-mode">
-<header>
+    <header>
         <div class="container d-flex justify-content-between align-items-center header-container">
             <h1 class="font-weight-bold mb-0">E-Sahara</h1>
             <div class="search-bar-container">
@@ -156,32 +173,33 @@
     </header>
     <div class="container mt-4">
         <div class="row">
+
             <div class="col-md-12">
                 <h2 class="mb-4">Modifier Vos informations</h2>
                 <form action="" method="post">
                     <div class="form-group">
-                        <input type="text" class="form-control" name="Nom" placeholder="Nom" required>
+                        <input type="text" class="form-control" name="Nom" placeholder="Nom" value="<?php echo htmlspecialchars($row['nom_user']); ?>">
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="Prenom" placeholder="Prénom" required>
+                        <input type="text" class="form-control" name="Prenom" placeholder="Prénom" value="<?php echo htmlspecialchars($row['prenom_user']); ?>">
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="E-mail" placeholder="Email" required>
+                        <input type="text" class="form-control" name="E-mail" placeholder="Email" value="<?php echo htmlspecialchars($row['email_user']); ?>">
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="NumTele" placeholder="Numéro de Téléphone">
+                        <input type="text" class="form-control" name="NumTele" placeholder="Numéro de Téléphone" value="<?php echo htmlspecialchars($row['num_tel_user']); ?>">
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="Adresse" placeholder="Adresse">
+                        <input type="text" class="form-control" name="Adresse" placeholder="Adresse" value="<?php echo htmlspecialchars($row['adresse_user']); ?>">
                     </div>
                     <div class="form-group">
-                        <input type="password" class="form-control" name="oldPass" placeholder="Mot de passe" required>
+                        <input type="password" class="form-control" name="oldPass" placeholder="Mot de passe">
                     </div>
                     <div class="form-group">
-                        <input type="password" class="form-control" name="PasswordN1" placeholder=" Nouveau Mot de passe" >
+                        <input type="password" class="form-control" name="PasswordN1" placeholder=" Nouveau Mot de passe">
                     </div>
                     <div class="form-group">
-                        <input type="password" class="form-control" name="PasswordN2" placeholder="Répétez le nouveau mot de passe" >
+                        <input type="password" class="form-control" name="PasswordN2" placeholder="Répétez le nouveau mot de passe">
                     </div>
                     <input type="submit" value=" Modifier " class="text-dark btn btn-outline-secondary mr-2 col-12">
                 </form>
@@ -196,48 +214,49 @@
                     $pren = $_POST['Prenom'];
                     $NumTele = $_POST['NumTele'];
                     $adr = $_POST['Adresse'];
-                    // Check if password matches
+                    
+                    // Validate form data
                     if ($passwordN1 !== $passwordN2) {
                         echo "<div class='text-danger col-12 mr-2'>Passwords do not match.</div>";
                         exit;
                     }
-                    if (!strpos($email, "@")) {
+                    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                         echo "<div class='text-danger col-12 mr-2'>Please enter a valid email address.</div>";
                         exit;
                     }
+
+                    // Get the current password hash from the database
                     $sql = "SELECT password_user FROM user WHERE UserName = ?";
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("s", $username);
+                    $stmt->bind_param("s", $UserName);
                     $stmt->execute();
                     $result = $stmt->get_result();
-                    $row = $result->fetch_assoc();
-                    if (password_verify($password_plain, $row['password_user'])) {
-                        $hashed_password = password_hash($passwordN1, PASSWORD_DEFAULT);
-
-
-                        // Insert user data into database
-                        $sql = "UPDATE user SET nom_user = '?', prenom_user = '?', email_user = '?', num_tel_user = '?', password_user = '?', adresse_user = '?' WHERE user.UserName = '?'";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("sssssss", $nom, $pren, $NumTele, $email, $hashed_password, $adr,$username);
-
-
-                        if ($stmt->execute()) {
-
-
-                            echo "<div class='text-success col-12 mr-2'>User registered successfully!</div>";
-                            // Redirect the user to the login page or any other page
-                            header("Location: Main-Client.php");
-                            exit;
+                    if ($result->num_rows > 0) {
+                        $row = $result->fetch_assoc();
+                        if (password_verify($password_plain, $row['password_user'])) {
+                            $hashed_password = password_hash($passwordN1, PASSWORD_DEFAULT);
+                            if (empty($passwordN1) && empty($passwordN2)) {
+                                $sql = "UPDATE user SET nom_user = ?, prenom_user = ?, email_user = ?, num_tel_user = ?, adresse_user = ? WHERE UserName = ?";
+                                $stmt = $conn->prepare($sql);
+                                $stmt->bind_param("ssssss", $nom, $pren, $email, $NumTele, $adr, $UserName);
+                            } else {
+                                $sql = "UPDATE user SET nom_user = ?, prenom_user = ?, email_user = ?, num_tel_user = ?, password_user = ?, adresse_user = ? WHERE UserName = ?";
+                                $stmt = $conn->prepare($sql);
+                                $stmt->bind_param("sssssss", $nom, $pren, $email, $NumTele, $hashed_password, $adr, $UserName);
+                            }
+                            if ($stmt->execute()) {
+                                // Redirect the user to the main client page
+                                header("Location: Main-Client.php?status=success");
+                                exit;
+                            } else {
+                                echo "<div class='text-danger col-12 mr-2'>Error: " . $stmt->error . "</div>";
+                            }
                         } else {
-                            echo "<div class='text-danger col-12 mr-2'>Error: " . $stmt->error . "</div>";
+                            echo "<div class='text-danger col-12 mr-2'>Incorrect password.</div>";
                         }
                     } else {
-                        // Password is incorrect
-                        echo "<div class='text-danger col-12 mr-2'>Incorrect password.</div>";
+                        echo "<div class='text-danger col-12 mr-2'>User not found.</div>";
                     }
-
-                    // Hash the password
-
 
                     // Close statement
                     $stmt->close();
@@ -247,7 +266,6 @@
                 $conn->close();
                 ?>
             </div>
-
 
         </div>
     </div>
@@ -268,10 +286,10 @@
         });
     </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit-id.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 </body>
 
 </html>

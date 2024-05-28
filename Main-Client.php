@@ -2,60 +2,26 @@
 include_once('Connection Open.php');
 session_start();
 
-// Check for form submission and handle accordingly
-if (isset($_POST['ID_Produit'])) {
-    if (empty($_SESSION['UserName'])) {
-        // Redirect to login page if client is not logged in
-        header('Location: index.php');
-        exit();
-    }
+$UserName = $_SESSION['UserName'];
 
-    $product_id = intval($_POST['ID_Produit']);
-    $username = $_SESSION['UserName'];
-    $username = '"' . $username . '"';
-    // Check if the product is already in the cart
-    $checkCartQuery = "SELECT pan.ID_Panier FROM panier pan
-                       INNER JOIN panierproduit pp ON pan.ID_Panier = pp.ID_Panier 
-                       WHERE pan.UserName = $username AND pp.ID_Produit = $product_id";
-    try {
-        $result = mysqli_query($conn, $checkCartQuery);
-        $row = mysqli_fetch_assoc($result);
-        $idpanier = intval($row['ID_Panier']);
-    } catch (Exception $e) {
-        die("Error executing query: " . $e->getMessage());
-    }
-
-    if (isset($idpanier)) {
-        // If the product is already in the cart, update the quantity
-        $updateCartQuery = "UPDATE panierproduit SET quantite_produit = quantite_produit + 1 WHERE ID_Panier = ? AND ID_Produit = ?";
-        $stmt = $conn->prepare($updateCartQuery);
-        if ($stmt === false) {
-            die("Error preparing query: " . $conn->error);
-        }
-        $stmt->bind_param("ii", $idpanier, $product_id);
-    } else {
-        // If the product is not in the cart, add it with quantity 1
-        $addCartQuery = "INSERT INTO panierproduit (ID_Panier, ID_Produit, quantite_produit) VALUES (?, ?, 1)";
-        $stmt = $conn->prepare($addCartQuery);
-        if ($stmt === false) {
-            die("Error preparing query: " . $conn->error);
-        }
-        // Assuming ID_Panier is obtained elsewhere or default to a value
-        $stmt->bind_param("ii", $idpanier, $product_id);
-    }
-
-    if ($stmt->execute()) {
-        // Redirect back to the main page or product page with success message
-        header('Location: Main-Client.php?status=success');
-    } else {
-        // Redirect back to the main page or product page with error message
-        header('Location: Main-Client.php?status=error');
-    }
-
-    $stmt->close();
-    mysqli_close($conn);
-    exit();
+// Check the database connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
+
+// Get the count of items in the user's cart
+$countQuery = "SELECT SUM(quantite_produit) AS itemCount FROM panierproduit pp JOIN panier p ON pp.ID_Panier = p.ID_Panier WHERE p.UserName = '$UserName'";
+$countResult = mysqli_query($conn, $countQuery);
+$itemCount = 0;
+if ($countResult) {
+    $countRow = mysqli_fetch_assoc($countResult);
+    $itemCount = $countRow['itemCount'] ? $countRow['itemCount'] : 0;
+} else {
+    echo "Error: " . mysqli_error($conn);
+}
+
+// Close the connection after fetching the item count
+// mysqli_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -186,6 +152,16 @@ if (isset($_POST['ID_Produit'])) {
             width: 90%;
             margin: auto auto;
         }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            padding: 5px 10px;
+            border-radius: 50%;
+            background-color: red;
+            color: white;
+        }
     </style>
 </head>
 
@@ -203,12 +179,15 @@ if (isset($_POST['ID_Produit'])) {
                     </div>
                 </form>
             </div>
-            <div class="d-flex nav-buttons align-items-center">
+            <div class="d-flex nav-buttons align-items-center position-relative">
                 <a href="Main-Client.php" class="btn btn-outline-primary mr-2">
                     <i class="fas fa-home"></i>
                 </a>
-                <a href="Panier.php" class="btn btn-outline-primary mr-2">
+                <a href="Panier.php" class="btn btn-outline-primary mr-2 position-relative">
                     <i class="fas fa-shopping-cart"></i>
+                    <?php if ($itemCount > 0) { ?>
+                        <span class="badge"><?php echo $itemCount; ?></span>
+                    <?php } ?>
                 </a>
                 <a href="Commandes-Client.php" class="btn btn-outline-primary mr-2">
                     <i class="fas fa-box"></i>
@@ -218,7 +197,7 @@ if (isset($_POST['ID_Produit'])) {
                         <i class="fas fa-user-shield"></i>
                     </a>
                 <?php } ?>
-                <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
+                <a href="Edit-client.php?UserName=<?php echo $_SESSION['UserName']; ?>" class="btn btn-outline-warning mr-2">
                     <i class="fas fa-user-edit"></i>
                 </a>
                 <?php if ($_SESSION['role_user'] == 'admin') { ?>
@@ -239,34 +218,45 @@ if (isset($_POST['ID_Produit'])) {
     <div class="container mt-4">
         <div class="row" id="products">
             <?php
+            include_once('Connection Open.php');
             $produit = "";
             if (isset($_GET['SrchPro'])) {
                 $produit = $_GET['SrchPro'];
             }
+
+            // Check the database connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
             $sql = 'SELECT * FROM produit WHERE Libelle_produit LIKE "%' . $produit . '%"';
             $result = mysqli_query($conn, $sql);
 
-            while ($row = mysqli_fetch_assoc($result)) { ?>
-                <div class="col-md-4 col-sm-6 col-12 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <img class="card-img-top" src="<?php echo $row['image_produit']; ?>" alt="Photo du produit">
-                        <div class="card-body d-flex flex-column">
-                            <h4 class="card-title font-weight-bold text-black-50"><?php echo $row['Libelle_produit']; ?></h4>
-                            <p class="font-weight-bold card-text"><?php echo $row['prix_unitaire'] . " Dh"; ?></p>
-                            <p class="card-text"><?php echo $row['description_produit']; ?></p>
-                            <div class="btn-group mt-auto">
-                                <form action="" method="post" class="mt-2">
-                                    <input type="hidden" name="ID_Produit" value="<?php echo $row['ID_Produit']; ?>">
-                                    <button type="submit" class="btn btn-success btn-block">Ajouter au panier</button>
-                                </form>
+            if ($result) {
+                while ($row = mysqli_fetch_assoc($result)) { ?>
+                    <div class="col-md-4 col-sm-6 col-12 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <img class="card-img-top" src="<?php echo $row['image_produit']; ?>" alt="Photo du produit">
+                            <div class="card-body d-flex flex-column">
+                                <h4 class="card-title font-weight-bold text-black-50"><?php echo $row['Libelle_produit']; ?></h4>
+                                <p class="font-weight-bold card-text"><?php echo $row['prix_unitaire'] . " Dh"; ?></p>
+                                <p class="card-text"><?php echo $row['description_produit']; ?></p>
+                                <div class="btn-group mt-auto">
+                                    <form action="add-to-cart.php" method="get" class="mt-2">
+                                        <input type="hidden" name="ID_Produit" value="<?php echo $row['ID_Produit']; ?>">
+                                        <button type="submit" class="btn btn-success btn-block">Ajouter au panier</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            <?php
+                <?php
+                }
+            } else {
+                echo "Error: " . mysqli_error($conn);
             }
 
-            // Close connection
+            // Close the connection
             mysqli_close($conn); ?>
         </div>
     </div>

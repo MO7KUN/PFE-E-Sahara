@@ -9,7 +9,7 @@
     session_start();
 
     // Check if user is logged in
-    if ($_SESSION['UserName']=="") {
+    if (!isset($_SESSION['UserName']) || $_SESSION['UserName'] == "") {
         // Redirect to login page if not logged in
         header("Location: index.php");
         exit();
@@ -19,16 +19,82 @@
     $UserName = $_SESSION['UserName'];
     $sql = 'SELECT SUM(p.prix_unitaire * pan.quantite_produit) AS total
             FROM produit p, panierproduit pan, panier pp
-            WHERE p.ID_Produit = pan.ID_Produit AND pp.ID_Panier = pan.ID_Panier AND pp.UserName = "'.$UserName.'"';
-    $result = mysqli_query($conn, $sql);
+            WHERE p.ID_Produit = pan.ID_Produit AND pp.ID_Panier = pan.ID_Panier AND pp.UserName = ?';
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        echo "Error preparing statement: " . $conn->error;
+        exit();
+    }
+    $stmt->bind_param("s", $UserName);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     // Check for SQL errors
     if (!$result) {
-        echo "Error: " . mysqli_error($conn);
+        echo "Error: " . $stmt->error;
         exit();
     }
 
-    $total = mysqli_fetch_assoc($result)['total'];
+    $total = $result->fetch_assoc()['total'];
+
+    // Process form data
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $cardNumber = $_POST['cardNumber'];
+        $cardName = $_POST['cardName'];
+        $expDate = $_POST['expDate'];
+        $cvv = $_POST['cvv'];
+
+        // Insert payment method into the database
+        $sql = "INSERT INTO payementmethode (UserName, cardNumber, cardName, cvv, expDate) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        if ($stmt === false) {
+            echo "Error preparing statement: " . $conn->error;
+            exit();
+        }
+        $stmt->bind_param("sssss", $UserName, $cardNumber, $cardName, $cvv, $expDate);
+        if (!$stmt->execute()) {
+            echo "Error executing statement: " . $stmt->error;
+            exit();
+        }
+
+        // Get all products in the user's cart
+        $sql = 'SELECT pan.ID_Produit, pan.quantite_produit
+                FROM panierproduit pan, panier pp
+                WHERE pp.ID_Panier = pan.ID_Panier AND pp.UserName = ?';
+        $stmt = $conn->prepare($sql);
+        if ($stmt === false) {
+            echo "Error preparing statement: " . $conn->error;
+            exit();
+        }
+        $stmt->bind_param("s", $UserName);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $productID = $row['ID_Produit'];
+            $quantity = $row['quantite_produit'];
+            // Insert order into the database
+            $sql = "INSERT INTO commandes (UserName,status_livraison) VALUES (?, 'En cours de livraison')";
+            $stmt = $conn->prepare($sql);
+            if ($stmt === false) {
+                echo "Error preparing statement: " . $conn->error;
+                exit();
+            }
+            $stmt->bind_param("sii", $UserName, $productID, $quantity);
+            if (!$stmt->execute()) {
+                echo "Error executing statement: " . $stmt->error;
+                exit();
+            }
+        }
+
+        // Redirect to the orders page
+        header("Location: Commandes-Client.php");
+        exit();
+    }
+
+    // Close statement and connection
+    $stmt->close();
+    $conn->close();
     ?>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -154,6 +220,7 @@
             font-weight: bold;
             margin-bottom: 10px;
         }
+
         .dark-mode .payment-form label {
             color: #000000;
         }
@@ -167,14 +234,15 @@
             padding: 10px;
             font-size: 1.2rem;
         }
-        .h-50{
+
+        .h-50 {
             height: 50px;
         }
     </style>
 </head>
 
 <body class="light-mode">
-<header>
+    <header>
         <div class="container d-flex justify-content-between align-items-center header-container">
             <h1 class="font-weight-bold mb-0">E-Sahara</h1>
             <div class="search-bar-container">
@@ -216,19 +284,19 @@
     </header>
     <div class="container mt-5">
         <h2>Paiement</h2>
-        <form action="process_payment.php" method="POST" class="payment-form">
+        <form action="" method="POST" class="payment-form">
             <div class="form-group">
                 <label for="cardNumber">Numéro de carte</label>
                 <input type="text" class="form-control" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" required>
             </div>
             <div class="form-group">
                 <label for="cardName">Nom sur la carte</label>
-                <input type="text" class="form-control" id="cardName" name="cardName" placeholder="John Doe" required>
+                <input type="text" class="form-control" id="cardName" name="cardName" placeholder="NOM PRENOM" required>
             </div>
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="expDate">Date d'expiration</label>
-                    <input type="test" class="form-control h-50" id="expDate" name="expDate" placeholder="MM/YY" required>
+                    <input type="text" class="form-control h-50" id="expDate" name="expDate" placeholder="MM/YY" required>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="cvv">CVV</label>
@@ -241,19 +309,9 @@
             </div>
             <button type="submit" class="btn btn-primary">Payer</button>
         </form>
-        <?php
-        if (isset($_SESSION['UserName'])) {
-            $UserName = $_SESSION['UserName'];
-            $date = $_POST['expDate'];
-            $cardname = $_POST['cardName'];
-            $cardnumber = $_POST['cardNumber'];
-            $cvv = $_POST['cvv'];
-        }
-        $sql="INSERT INTO payementmethode VALUES ('".$UserName."','".$cardnumber."', '".$cardname."','".$cvv."','".$date."')";
-        ?>
     </div>
     <script>
-        const btnDarkMode = document.getElementById('dark-mode-toggle');
+        const btnDarkMode = document.querySelector('.btn-dark-mode');
         const body = document.body;
 
         btnDarkMode.addEventListener('click', () => {
@@ -273,6 +331,10 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit-id.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+</body>
+
+</html>
+
 </body>
 
 </html>

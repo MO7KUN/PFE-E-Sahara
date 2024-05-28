@@ -4,22 +4,13 @@
 <head>
     <?php
     include_once('Connection Open.php');
-
-    // Start session to access session variables
     session_start();
-
-    // Check if user is logged in
-    if ($_SESSION['UserName']=="") {
-        // Redirect to login page if not logged in
-        header("Location: index.php");
-        exit();
-    }
 
     // Fetch cart items for the current user
     $UserName = $_SESSION['UserName'];
-    $sql = 'SELECT p.Libelle_produit, p.prix_unitaire, pan.quantite_produit, (p.prix_unitaire * pan.quantite_produit) AS subtotal
+    $sql = 'SELECT p.ID_Produit AS ID_Produit, p.Libelle_produit, p.prix_unitaire, pan.quantite_produit, (p.prix_unitaire * pan.quantite_produit) AS subtotal
             FROM produit p, panierproduit pan, panier pp
-            WHERE p.ID_Produit = pan.ID_Produit AND pp.ID_Panier = pan.ID_Panier AND pp.UserName = "'.$UserName.'"';
+            WHERE p.ID_Produit = pan.ID_Produit AND pp.ID_Panier = pan.ID_Panier AND pp.UserName = "' . $UserName . '"';
     $result = mysqli_query($conn, $sql);
 
     // Check for SQL errors
@@ -116,10 +107,14 @@
             font-size: 1.5rem;
             color: #333;
         }
+
         .dark-mode td {
-            color: #fff;}
+            color: #fff;
+        }
+
         .dark-mode th {
-            color: #fff;}
+            color: #fff;
+        }
 
         .list-unstyled li {
             margin-bottom: 10px;
@@ -146,7 +141,7 @@
 </head>
 
 <body class="light-mode">
-<header>
+    <header>
         <div class="container d-flex justify-content-between align-items-center header-container">
             <h1 class="font-weight-bold mb-0">E-Sahara</h1>
             <div class="search-bar-container">
@@ -207,7 +202,13 @@
                     echo "<td>{$row['prix_unitaire']} Dh</td>";
                     echo "<td>{$row['quantite_produit']}</td>";
                     echo "<td>{$row['subtotal']} Dh</td>";
-                    echo "<td><button class='btn btn-danger'><i class='fas fa-trash'></i></button></td>";
+                ?> <td>
+                        <form action="delete.php" method="get" class="mt-2">
+                            <input type="hidden" name="ID_Produit" value="<?php echo $row['ID_Produit']; ?>">
+                            <button type="submit" class="btn btn-danger btn-block"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                <?php
                     echo "</tr>";
                 }
                 ?>
@@ -223,7 +224,7 @@
                         }
                         echo $total;
                         ?> Dh</h4>
-            <a href="payer.php" class="btn btn-primary"><button class="btn btn-primary"><i class="fas fa-shopping-cart"></i></button></a> 
+            <a href="payer.php" class="btn btn-primary"><button class="btn btn-primary"><i class="fas fa-shopping-cart"></i></button></a>
         </div>
     </div>
     <script>

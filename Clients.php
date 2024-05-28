@@ -188,8 +188,8 @@
                                 <li><i class="fas fa-phone-alt"></i> <?php echo $row['num_tel_user']; ?></li>
                                 <li class="email-text"><i class="fas fa-envelope"></i> <?php echo $row['email_user']; ?></li>
                             </ul>
-                            <a href="tel:<?php echo $row['num_tel_user']; ?>" class="btn btn-primary mt-3">Contacter le client</a>
-                            <a href="Edit-client.php" class="btn btn-success mt-3">Editer client</a>
+                            <a href="tel:<?php echo $row['num_tel_user']; ?>" class="btn btn-primary mt-3 col-6 mr-2"><i class="fas fa-phone"></i></a>
+                            <a href="mailto:<?php echo $row['email_user']; ?>" class="btn btn-success mt-3 col-5 mr-2"><i class="fas fa-envelope"></i></a>
                         </div>
                     </div>
                 </div>

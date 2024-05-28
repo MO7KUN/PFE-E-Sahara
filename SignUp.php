@@ -113,7 +113,7 @@ $NumTele = NULL;
                 echo "<div class='text-danger'>Passwords do not match.</div>";
                 exit;
             }
-            if(strpos($login, "@") === false){
+            if(strpos($email, "@") === false){
                 echo "<div class='text-danger'>Please enter a valid email address.</div>";
                 exit;
             }
@@ -130,12 +130,12 @@ $NumTele = NULL;
 
             if ($stmt->execute()) {
 
-                $addCartQuery = "INSERT INTO panier (UserName, ID_Produit, Qautite_produit) VALUES (?, ?, 1)";
+                $addCartQuery = "INSERT INTO panier (UserName) VALUES (?)";
                 $stmt2 = $conn->prepare($addCartQuery);
                 if ($stmt2 === false) {
                     die("Error preparing query: " . $conn->error);
                 }
-                $stmt2->bind_param("si", $UserName, $product_id);
+                $stmt2->bind_param("s", $UserName);
                 if ($stmt2->execute()) {
                     echo "<div class='text-success'>User registered successfully!</div>";
                     // Redirect the user to the login page or any other page
