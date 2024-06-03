@@ -2,9 +2,7 @@
 <html lang="en">
 
 <head>
-    <?php
-    include_once('Connection Open.php');
-    ?>
+    <?php include_once('Connection Open.php'); ?>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +15,6 @@
             font-family: 'Arial', sans-serif;
         }
 
-        /* Light mode */
         .light-mode {
             background-color: #f0f2f5;
             color: #000000;
@@ -28,7 +25,6 @@
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* Dark mode */
         .dark-mode {
             background-color: #121212;
             color: #ffffff;
@@ -98,7 +94,6 @@
 
         .btn:hover {
             background-color: rgba(0, 0, 255, 0.1);
-            /* Blue color */
         }
 
         .btn-dark-mode {
@@ -157,57 +152,93 @@
         <div class="row">
             <div class="col-md-12">
                 <h2 class="mb-4">Ajouter un Produit</h2>
-                <form action="" method="post">
+                <form action="" method="post" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="Libelle" class="bb margin">Libelle :</label>
-                        <input name="Libelle" id="Libelle" type="text" placeholder=" Libelle" class="form-control">
+                        <input name="Libelle" id="Libelle" type="text" placeholder=" Libelle" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label for="Prix" class="bb margin">Prix :</label>
-                        <input name="Prix" id="Prix" type="text" placeholder=" Prix" class="form-control">
+                        <input name="Prix" id="Prix" type="text" placeholder=" Prix" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label for="Quantite" class="bb margin">Quantite :</label>
-                        <input name="Quantite" id="Quantite" type="text" placeholder=" Quantite" class="form-control">
+                        <input name="Quantite" id="Quantite" type="text" placeholder=" Quantite" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label for="Description" class="bb margin">Description :</label>
-                        <input name="Description" id="Description" type="text" placeholder=" Description" class="form-control">
+                        <input name="Description" id="Description" type="text" placeholder=" Description" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label for="Photo" class="bb margin">Photo :</label>
-                        <input id="Photo" name="Photo" type="file" placeholder=" Model" class="form-control">
+                        <input id="Photo" name="Photo" type="file" placeholder=" Model" class="form-control" required>
                     </div>
                     <input type="submit" value=" Ajouter " class="text-dark btn btn-outline-secondary mr-2 col-12">
                 </form>
                 <?php
-                if (!(isset($_POST['Libelle']) & isset($_POST['Prix']) & isset($_POST['Photo']) & isset($_POST['Description']) & isset($_POST['Quantite']))) {
-                ?>
-                    <p class="bb2 bg-warning text-center margin">Veuillez remplir tous les champs</p>
-                    <?php
-
-                } else {
-                    $libelle = $_POST['Libelle'];
-                    $prix = $_POST['Prix'];
-                    $desc = $_POST['Description'];
-                    $image = $_POST['Photo'];
-                    $quantity = $_POST['Quantite'];
-                    $sql = "INSERT INTO produit (Libelle_produit, image_produit, prix_unitaire, description_produit, quantite_stock) VALUES ('$libelle','$image',$prix,'$desc',$quantity)";
-                    if (mysqli_query($conn, $sql)) {
-                    ?>
-                        <p class="bb2 text-center margin">Ajoutee avec succee</p>
-                    <?php
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                    if (isset($_POST['Libelle']) && isset($_POST['Prix']) && isset($_POST['Quantite']) && isset($_POST['Description']) && isset($_FILES['Photo'])) {
+                        $libelle = $_POST['Libelle'];
+                        $prix = $_POST['Prix'];
+                        $quantity = $_POST['Quantite'];
+                        $desc = $_POST['Description'];
+                        $image = $_FILES['Photo'];
+                
+                        $target_dir = "Images/Products/";
+                        $imageFileType = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
+                        $newFileName = $libelle . "." . $imageFileType;
+                        $target_file = $target_dir . basename($newFileName);
+                        $uploadOk = 1;
+                
+                        // Check if image file is an actual image or fake image
+                        $check = getimagesize($image["tmp_name"]);
+                        if ($check !== false) {
+                            $uploadOk = 1;
+                        } else {
+                            echo "File is not an image.";
+                            $uploadOk = 0;
+                        }
+                
+                        // Check file size
+                        if ($image["size"] > 5000000) {
+                            echo "Sorry, your file is too large.";
+                            $uploadOk = 0;
+                        }
+                
+                        // Allow certain file formats
+                        if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
+                            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+                            $uploadOk = 0;
+                        }
+                
+                        // Check if directory exists, if not, create it
+                        if (!is_dir($target_dir)) {
+                            mkdir($target_dir, 0777, true);
+                        }
+                
+                        // Check if $uploadOk is set to 0 by an error
+                        if ($uploadOk == 0) {
+                            echo "Sorry, your file was not uploaded.";
+                        } else {
+                            if (move_uploaded_file($image["tmp_name"], $target_file)) {
+                                // Store image path in the database
+                                $sql = "INSERT INTO produit (Libelle_produit, image_produit, prix_unitaire, description_produit, quantite_stock) VALUES ('$libelle', '$target_file', $prix, '$desc', $quantity)";
+                                if (mysqli_query($conn, $sql)) {
+                                    echo "<p class='bb2 text-center margin'>Ajoutee avec succee</p>";
+                                } else {
+                                    echo "<p class='bb2 text-center margin'>Un erreur est survenue : " . mysqli_error($conn) . "</p>";
+                                }
+                            } else {
+                                echo "Sorry, there was an error uploading your file.";
+                            }
+                        }
                     } else {
-                    ?>
-                        <p class="bb2 text-center margin">Un erreur est survenue : <?php echo mysqli_error($conn); ?></p>
-                <?php
+                        echo "<p class='bb2 bg-warning text-center margin'>Veuillez remplir tous les champs</p>";
                     }
                 }
                 mysqli_close($conn);
                 ?>
             </div>
-
-
         </div>
     </div>
     <script>

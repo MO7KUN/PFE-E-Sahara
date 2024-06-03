@@ -5,7 +5,6 @@
     <?php
     include_once('Connection Open.php');
     session_start();
-
     ?>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -19,7 +18,6 @@
             font-family: 'Arial', sans-serif;
         }
 
-        /* Light mode */
         .light-mode {
             background-color: #f0f2f5;
             color: #000000;
@@ -30,7 +28,6 @@
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* Dark mode */
         .dark-mode {
             background-color: #121212;
             color: #ffffff;
@@ -100,7 +97,6 @@
 
         .btn:hover {
             background-color: rgba(0, 0, 255, 0.1);
-            /* Blue color */
         }
 
         .btn-dark-mode {
@@ -161,51 +157,51 @@
      $row = mysqli_fetch_assoc($result);
     ?>
     <div class="container mt-4">
-            <div class="col-md-12">
-                <h2 class="mb-4">Modifier un Produit</h2>
-                <form action="" method="post">
-                    <div class="form-group">
-                        <label for="Libelle" class="bb margin">Libelle :</label>
-                        <input name="Libelle" id="Libelle" type="text" placeholder=" Libelle" class="form-control" value="<?php echo $row['Libelle_produit']; ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="Prix" class="bb margin">Prix :</label>
-                        <input name="Prix" id="Prix" type="text" placeholder=" Prix" class="form-control" value="<?php echo $row['prix_unitaire']; ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="Quantite" class="bb margin">Quantite :</label>
-                        <input name="Quantite" id="Quantite" type="text" placeholder=" Quantite" class="form-control" value="<?php echo $row['quantite_stock']; ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="Description" class="bb margin">Description :</label>
-                        <input name="Description" id="Description" type="text" placeholder=" Description" class="form-control" value="<?php echo $row['description_produit']; ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="Photo" class="bb margin">Photo :</label>
-                        <input id="Photo" name="Photo" type="text" placeholder=" Model" class="form-control" value="<?php echo $row['image_produit']; ?>">
-                    </div>
-                    <input type="submit" value=" Modifier " class="text-dark btn btn-outline-secondary mr-2 col-12">
-                </form>
-                <?php 
-                if (isset($_POST['Libelle']) & isset($_POST['Prix']) & isset($_POST['Photo']) & isset($_POST['Description']) & isset($_POST['Quantite'])) {
-                    $libelle = $_POST['Libelle'];
-                    $prix = $_POST['Prix'];
-                    $photo = $_POST['Photo'];
-                    $description = $_POST['Description'];
-                    $quantite = $_POST['Quantite'];
-                    $id = $_GET['ID_Produit'];
+        <div class="col-md-12">
+            <h2 class="mb-4">Modifier un Produit</h2>
+            <form action="modify-Produit.php?ID_Produit=<?php echo $_GET['ID_Produit']; ?>" method="post">
+                <div class="form-group">
+                    <label for="Libelle" class="bb margin">Libelle :</label>
+                    <input name="Libelle" id="Libelle" type="text" placeholder=" Libelle" class="form-control" value="<?php echo $row['Libelle_produit']; ?>">
+                </div>
+                <div class="form-group">
+                    <label for="Prix" class="bb margin">Prix :</label>
+                    <input name="Prix" id="Prix" type="text" placeholder=" Prix" class="form-control" value="<?php echo $row['prix_unitaire']; ?>">
+                </div>
+                <div class="form-group">
+                    <label for="Quantite" class="bb margin">Quantite :</label>
+                    <input name="Quantite" id="Quantite" type="text" placeholder=" Quantite" class="form-control" value="<?php echo $row['quantite_stock']; ?>">
+                </div>
+                <div class="form-group">
+                    <label for="Description" class="bb margin">Description :</label>
+                    <input name="Description" id="Description" type="text" placeholder=" Description" class="form-control" value="<?php echo $row['description_produit']; ?>">
+                </div>
+                <div class="form-group">
+                    <label for="Photo" class="bb margin">Photo :</label>
+                    <input id="Photo" name="Photo" type="text" placeholder=" Model" class="form-control" value="<?php echo $row['image_produit']; ?>">
+                </div>
+                <input type="submit" value="Modifier" class="text-dark btn btn-outline-secondary mr-2 col-12">
+                <a href="delete-Produit.php?ID_Produit=<?php echo $_GET['ID_Produit']; ?>" class="btn btn-outline-danger col-12 mt-2">Supprimer</a>
+            </form>
+            <?php
+            if (isset($_POST['Libelle']) && isset($_POST['Prix']) && isset($_POST['Photo']) && isset($_POST['Description']) && isset($_POST['Quantite'])) {
+                $libelle = $_POST['Libelle'];
+                $prix = $_POST['Prix'];
+                $photo = $_POST['Photo'];
+                $description = $_POST['Description'];
+                $quantite = $_POST['Quantite'];
+                $id = $_GET['ID_Produit'];
 
-                    $sql = 'UPDATE produit SET Libelle_produit = "'.$libelle.'", prix_unitaire = $prix, image_produit = "'.$photo.'", description_produit = "'.$description.'", quantite_stock =' .$quantite.' WHERE ID_Produit ='. $id;
-                    $result = mysqli_query($conn, $sql);
+                $sql = 'UPDATE produit SET Libelle_produit = "' . $libelle . '", prix_unitaire = ' . $prix . ', image_produit = "' . $photo . '", description_produit = "' . $description . '", quantite_stock =' . $quantite . ' WHERE ID_Produit =' . $id;
+                $result = mysqli_query($conn, $sql);
 
-                    if ($result) {
-                        echo "<div class='alert alert-success'>Produit modifié avec succès.</div>";
-                    } else {
-                        echo "<div class='alert alert-danger'>Erreur lors de la modification du produit.</div>";
-                    }
+                if ($result) {
+                    echo "<div class='alert alert-success'>Produit modifié avec succès.</div>";
+                } else {
+                    echo "<div class='alert alert-danger'>Erreur lors de la modification du produit.</div>";
                 }
-                ?>
-            </div>
+            }
+            ?>
         </div>
     </div>
     <script>
