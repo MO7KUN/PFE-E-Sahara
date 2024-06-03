@@ -159,7 +159,7 @@
     <div class="container mt-4">
         <div class="col-md-12">
             <h2 class="mb-4">Modifier un Produit</h2>
-            <form action="modify-Produit.php?ID_Produit=<?php echo $_GET['ID_Produit']; ?>" method="post">
+            <form action="modify-Produit.php?ID_Produit=<?php echo $_GET['ID_Produit']; ?>" method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="Libelle" class="bb margin">Libelle :</label>
                     <input name="Libelle" id="Libelle" type="text" placeholder=" Libelle" class="form-control" value="<?php echo $row['Libelle_produit']; ?>">
@@ -178,27 +178,36 @@
                 </div>
                 <div class="form-group">
                     <label for="Photo" class="bb margin">Photo :</label>
-                    <input id="Photo" name="Photo" type="text" placeholder=" Model" class="form-control" value="<?php echo $row['image_produit']; ?>">
+                    <input id="Photo" name="Photo" type="file" placeholder=" Model" class="form-control">
                 </div>
-                <input type="submit" value="Modifier" class="text-dark btn btn-outline-secondary mr-2 col-12">
-                <a href="delete-Produit.php?ID_Produit=<?php echo $_GET['ID_Produit']; ?>" class="btn btn-outline-danger col-12 mt-2">Supprimer</a>
+                <div class="button-group">
+                    <input type="submit" value="Modifier" class="text-dark btn btn-outline-secondary col-12 mr-2 mt-2">
+                    <a href="delete-Produit.php?ID_Produit=<?php echo $_GET['ID_Produit']; ?>" class="btn btn-outline-danger col-12 mr-2 mt-2">Supprimer</a>
+                </div>
             </form>
             <?php
-            if (isset($_POST['Libelle']) && isset($_POST['Prix']) && isset($_POST['Photo']) && isset($_POST['Description']) && isset($_POST['Quantite'])) {
+            if (isset($_POST['Libelle']) && isset($_POST['Prix']) && isset($_FILES['Photo']) && isset($_POST['Description']) && isset($_POST['Quantite'])) {
                 $libelle = $_POST['Libelle'];
                 $prix = $_POST['Prix'];
-                $photo = $_POST['Photo'];
                 $description = $_POST['Description'];
                 $quantite = $_POST['Quantite'];
                 $id = $_GET['ID_Produit'];
 
-                $sql = 'UPDATE produit SET Libelle_produit = "' . $libelle . '", prix_unitaire = ' . $prix . ', image_produit = "' . $photo . '", description_produit = "' . $description . '", quantite_stock =' . $quantite . ' WHERE ID_Produit =' . $id;
-                $result = mysqli_query($conn, $sql);
+                $uploadDir = 'uploads/';
+                $uploadFile = $uploadDir . basename($_FILES['Photo']['name']);
 
-                if ($result) {
-                    echo "<div class='alert alert-success'>Produit modifié avec succès.</div>";
+                if (move_uploaded_file($_FILES['Photo']['tmp_name'], $uploadFile)) {
+                    $photo = $uploadFile;
+                    $sql = 'UPDATE produit SET Libelle_produit = "' . $libelle . '", prix_unitaire = ' . $prix . ', image_produit = "' . $photo . '", description_produit = "' . $description . '", quantite_stock =' . $quantite . ' WHERE ID_Produit =' . $id;
+                    $result = mysqli_query($conn, $sql);
+
+                    if ($result) {
+                        echo "<div class='alert alert-success'>Produit modifié avec succès.</div>";
+                    } else {
+                        echo "<div class='alert alert-danger'>Erreur lors de la modification du produit.</div>";
+                    }
                 } else {
-                    echo "<div class='alert alert-danger'>Erreur lors de la modification du produit.</div>";
+                    echo "<div class='alert alert-danger'>Erreur lors du téléchargement de l'image.</div>";
                 }
             }
             ?>
