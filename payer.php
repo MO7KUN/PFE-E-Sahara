@@ -22,78 +22,139 @@
             WHERE p.ID_Produit = pan.ID_Produit AND pp.ID_Panier = pan.ID_Panier AND pp.UserName = ?';
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
-        echo "Error preparing statement: " . $conn->error;
-        exit();
-    }
-    $stmt->bind_param("s", $UserName);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    // Check for SQL errors
-    if (!$result) {
-        echo "Error: " . $stmt->error;
-        exit();
-    }
-
-    $total = $result->fetch_assoc()['total'];
-
-    // Process form data
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $cardNumber = $_POST['cardNumber'];
-        $cardName = $_POST['cardName'];
-        $expDate = $_POST['expDate'];
-        $cvv = $_POST['cvv'];
-
-        // Insert payment method into the database
-        $sql = "INSERT INTO payementmethode (UserName, cardNumber, cardName, cvv, expDate) VALUES (?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            echo "Error preparing statement: " . $conn->error;
-            exit();
-        }
-        $stmt->bind_param("sssss", $UserName, $cardNumber, $cardName, $cvv, $expDate);
-        if (!$stmt->execute()) {
-            echo "Error executing statement: " . $stmt->error;
-            exit();
-        }
-
-        // Get all products in the user's cart
-        $sql = 'SELECT pan.ID_Produit, pan.quantite_produit
-                FROM panierproduit pan, panier pp
-                WHERE pp.ID_Panier = pan.ID_Panier AND pp.UserName = ?';
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            echo "Error preparing statement: " . $conn->error;
-            exit();
-        }
+        $error = "Error preparing statement for total price: " . $conn->error;
+    } else {
         $stmt->bind_param("s", $UserName);
         $stmt->execute();
         $result = $stmt->get_result();
+        if (!$result) {
+            $error = "Error executing statement for total price: " . $stmt->error;
+        } else {
+            $total = $result->fetch_assoc()['total'];
+        }
+        $stmt->close();
+    }
 
-        while ($row = $result->fetch_assoc()) {
-            $productID = $row['ID_Produit'];
-            $quantity = $row['quantite_produit'];
-            // Insert order into the database
-            $sql = "INSERT INTO commandes (UserName,status_livraison) VALUES (?, 'En cours de livraison')";
+    // Fetch existing payment information
+    $paymentExists = false;
+    $sql = "SELECT Card_Name, Date_expiration FROM payementmethode WHERE UserName = ?";
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        $error = "Error preparing statement for fetching payment info: " . $conn->error;
+    } else {
+        $stmt->bind_param("s", $UserName);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result && $result->num_rows > 0) {
+            $paymentExists = true;
+            $paymentInfo = $result->fetch_assoc();
+        }
+        $stmt->close();
+    }
+
+    // Process form data
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $useExisting = isset($_POST['useExisting']);
+        $cardNumber = $_POST['cardNumber'] ?? null;
+        $cardName = $_POST['cardName'] ?? null;
+        $expDate = $_POST['expDate'] ?? null;
+        $cvv = $_POST['cvv'] ?? null;
+
+        if ($useExisting) {
+            // Use existing payment info
+            $sql = "SELECT CC_Num, CVC FROM payementmethode WHERE UserName = ?";
             $stmt = $conn->prepare($sql);
             if ($stmt === false) {
-                echo "Error preparing statement: " . $conn->error;
-                exit();
+                $error = "Error preparing statement for fetching existing payment details: " . $conn->error;
+            } else {
+                $stmt->bind_param("s", $UserName);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result && $result->num_rows > 0) {
+                    $existingPayment = $result->fetch_assoc();
+                    $cardNumber = $existingPayment['cardNumber'];
+                    $cvv = $existingPayment['cvv'];
+                }
+                $stmt->close();
             }
-            $stmt->bind_param("sii", $UserName, $productID, $quantity);
-            if (!$stmt->execute()) {
-                echo "Error executing statement: " . $stmt->error;
-                exit();
+        } else {
+            // Hash sensitive payment information
+            $hashedCardNumber = password_hash($cardNumber, PASSWORD_DEFAULT);
+            $hashedCvv = password_hash($cvv, PASSWORD_DEFAULT);
+
+            // Insert new payment method into the database
+            $sql = "INSERT INTO payementmethode (UserName, CC_Num, Card_Name, CVC, Date_expiration) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            if ($stmt === false) {
+                $error = "Error preparing statement for new payment method: " . $conn->error;
+            } else {
+                $stmt->bind_param("sssss", $UserName, $hashedCardNumber, $cardName, $hashedCvv, $expDate);
+                if (!$stmt->execute()) {
+                    $error = "Error executing statement for new payment method: " . $stmt->error;
+                }
+                $stmt->close();
             }
         }
 
-        // Redirect to the orders page
-        header("Location: Commandes-Client.php");
-        exit();
+        if (!isset($error)) {
+            // Insert order into the database
+            $sql = "INSERT INTO commande (UserName, status_livraison) VALUES (?, 'En cours de livraison')";
+            $stmt = $conn->prepare($sql);
+            if ($stmt === false) {
+                $error = "Error preparing statement for commandes: " . $conn->error;
+            } else {
+                $stmt->bind_param("s", $UserName);
+                if (!$stmt->execute()) {
+                    $error = "Error executing statement for commandes: " . $stmt->error;
+                } else {
+                    $commandeID = $stmt->insert_id; // Get the last inserted commande ID
+
+                    // Get all products in the user's cart
+                    $sql = 'SELECT pan.ID_Produit, pan.quantite_produit
+                            FROM panierproduit pan, panier pp
+                            WHERE pp.ID_Panier = pan.ID_Panier AND pp.UserName = ?';
+                    $stmt = $conn->prepare($sql);
+                    if ($stmt === false) {
+                        $error = "Error preparing statement for products in cart: " . $conn->error;
+                    } else {
+                        $stmt->bind_param("s", $UserName);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        if (!$result) {
+                            $error = "Error executing statement for products in cart: " . $stmt->error;
+                        } else {
+                            while ($row = $result->fetch_assoc()) {
+                                $productID = $row['ID_Produit'];
+                                $quantity = $row['quantite_produit'];
+                                $sql = "INSERT INTO prodcommande (ID_Produit, ID_Commande, quantite_produit) VALUES (?, ?, ?)";
+                                $stmt = $conn->prepare($sql);
+                                if ($stmt === false) {
+                                    $error = "Error preparing statement for inserting product in order: " . $conn->error;
+                                    break;
+                                } else {
+                                    $stmt->bind_param("iii", $productID, $commandeID, $quantity);
+                                    if (!$stmt->execute()) {
+                                        $error = "Error executing statement for inserting product in order: " . $stmt->error;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        $stmt->close();
+                    }
+                }
+            }
+        }
+
+        if (isset($error)) {
+            echo "<script>alert('$error');</script>";
+        } else {
+            echo "<script>alert('Payment successful! Redirecting to main page...'); window.location.href = 'Main-Client.php';</script>";
+            exit();
+        }
     }
 
-    // Close statement and connection
-    $stmt->close();
+    // Close connection
     $conn->close();
     ?>
     <meta charset="UTF-8">
@@ -284,7 +345,21 @@
     </header>
     <div class="container mt-5">
         <h2>Paiement</h2>
-        <form action="" method="POST" class="payment-form">
+        <?php if ($paymentExists) { ?>
+            <div class="alert alert-info" role="alert">
+                <p>Payment information already exists:</p>
+                <ul>
+                    <li>Card Name: <?php echo htmlspecialchars($paymentInfo['Card_Name']); ?></li>
+                    <li>Expiration Date: <?php echo htmlspecialchars($paymentInfo['Date_expiration']); ?></li>
+                </ul>
+                <form action="" method="POST" class="payment-form">
+                    <input type="hidden" name="useExisting" value="1">
+                    <button type="submit" class="btn btn-primary">Use Existing Payment Info</button>
+                </form>
+                <button class="btn btn-secondary mt-3" onclick="document.getElementById('newPaymentForm').style.display='block';">Update/Add New Payment Info</button>
+            </div>
+        <?php } ?>
+        <form action="" method="POST" class="payment-form" id="newPaymentForm" <?php if ($paymentExists) echo 'style="display:none;"'; ?>>
             <div class="form-group">
                 <label for="cardNumber">Numéro de carte</label>
                 <input type="text" class="form-control" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" required>
@@ -331,10 +406,6 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit-id.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
-</body>
-
-</html>
-
 </body>
 
 </html>
