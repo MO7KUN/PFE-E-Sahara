@@ -3,6 +3,7 @@ include_once('Connection Open.php');
 session_start();
 
 $UserName = $_SESSION['UserName'];
+$_SESSION['direction']="Main-Client.php";
 
 // Check the database connection
 if ($conn->connect_error) {
@@ -144,8 +145,16 @@ if ($countResult) {
 
         /* Email text color in dark mode */
         .dark-mode .card-text {
-            color: #000000;
+            color: #ffffff;
             /* Black color */
+        }
+        .dark-mode .card-title {
+            color: #ffffff;
+            /* Black color */
+        }
+        .dark-mode .card{
+            background-color: #1f1f1f;
+            box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
         }
 
         .w-9 {
@@ -233,13 +242,13 @@ if ($countResult) {
                         <div class="card shadow-sm h-100">
                             <img class="card-img-top" src="<?php echo $row['image_produit']; ?>" alt="Photo du produit">
                             <div class="card-body d-flex flex-column">
-                                <h4 class="card-title font-weight-bold text-black-50"><?php echo $row['Libelle_produit']; ?></h4>
+                                <h4 class="card-title font-weight-bold text-50"><?php echo $row['Libelle_produit']; ?></h4>
                                 <p class="font-weight-bold card-text"><?php echo $row['prix_unitaire'] . " Dh"; ?></p>
-                                <p class="card-text"><?php echo $row['description_produit']; ?></p>
                                 <div class="btn-group mt-auto">
-                                    <form action="add-to-cart.php" method="get" class="mt-2">
+                                    <form action="add-to-cart.php" method="get" >
                                         <input type="hidden" name="ID_Produit" value="<?php echo $row['ID_Produit']; ?>">
-                                        <button type="submit" class="btn btn-success btn-block">Ajouter au panier</button>
+                                        <button type="submit" class="btn btn-success btn-block mt-2 ">Ajouter au panier</button>
+                                        <a href="produit.php?ID_Produit=<?php echo $row['ID_Produit']; ?>"><button type="button" class="btn mt-2  btn-primary btn-block">Voire le produit</button></a>
                                     </form>
                                 </div>
                             </div>

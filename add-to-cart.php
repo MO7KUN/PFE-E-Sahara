@@ -1,6 +1,7 @@
 <?php
 include_once('Connection Open.php');
 session_start();
+$direction=$_SESSION['direction'];
 
 if (isset($_GET['ID_Produit'])) {
     if (empty($_SESSION['UserName'])) {
@@ -78,10 +79,10 @@ if (isset($_GET['ID_Produit'])) {
 
     if ($stmt->execute()) {
         // Redirect back to the main page or product page with success message
-        header('Location: Main-Client.php?status=success');
+        header("Location: $direction?status=success");
     } else {
         // Redirect back to the main page or product page with error message
-        header('Location: Main-Client.php?status=error');
+        header("Location: $direction?status=error");
     }
 
     $stmt->close();

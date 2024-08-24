@@ -152,14 +152,14 @@
         </div>
     </header>
     <?php
-     $sql = 'SELECT * FROM produit WHERE ID_Produit ='. $_GET['ID_Produit'];
-     $result = mysqli_query($conn, $sql);
-     $row = mysqli_fetch_assoc($result);
+    $sql = 'SELECT * FROM produit WHERE ID_Produit =' . $_GET['ID_Produit'];
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
     ?>
     <div class="container mt-4">
         <div class="col-md-12">
             <h2 class="mb-4">Modifier un Produit</h2>
-            <form action="modify-Produit.php?ID_Produit=<?php echo $_GET['ID_Produit']; ?>" method="post" enctype="multipart/form-data">
+            <form action="" method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="Libelle" class="bb margin">Libelle :</label>
                     <input name="Libelle" id="Libelle" type="text" placeholder=" Libelle" class="form-control" value="<?php echo $row['Libelle_produit']; ?>">
@@ -186,19 +186,33 @@
                 </div>
             </form>
             <?php
-            if (isset($_POST['Libelle']) && isset($_POST['Prix']) && isset($_FILES['Photo']) && isset($_POST['Description']) && isset($_POST['Quantite'])) {
+            if (isset($_POST['Libelle']) && isset($_POST['Prix'])  && isset($_POST['Description']) && isset($_POST['Quantite'])) {
                 $libelle = $_POST['Libelle'];
                 $prix = $_POST['Prix'];
                 $description = $_POST['Description'];
                 $quantite = $_POST['Quantite'];
                 $id = $_GET['ID_Produit'];
 
-                $uploadDir = 'uploads/';
-                $uploadFile = $uploadDir . basename($_FILES['Photo']['name']);
 
-                if (move_uploaded_file($_FILES['Photo']['tmp_name'], $uploadFile)) {
-                    $photo = $uploadFile;
-                    $sql = 'UPDATE produit SET Libelle_produit = "' . $libelle . '", prix_unitaire = ' . $prix . ', image_produit = "' . $photo . '", description_produit = "' . $description . '", quantite_stock =' . $quantite . ' WHERE ID_Produit =' . $id;
+
+                if (isset($_FILES['Photo'])) {
+                    $uploadDir = 'uploads/';
+                    $uploadFile = $uploadDir . basename($_FILES['Photo']['name']);
+                    if (move_uploaded_file($_FILES['Photo']['tmp_name'], $uploadFile)) {
+                        $photo = $uploadFile;
+                        $sql = 'UPDATE produit SET Libelle_produit = "' . $libelle . '", prix_unitaire = ' . $prix . ', image_produit = "' . $photo . '", description_produit = "' . $description . '", quantite_stock =' . $quantite . ' WHERE ID_Produit =' . $id;
+                        $result = mysqli_query($conn, $sql);
+
+                        if ($result) {
+                            echo "<div class='alert alert-success'>Produit modifié avec succès.</div>";
+                        } else {
+                            echo "<div class='alert alert-danger'>Erreur lors de la modification du produit.</div>";
+                        }
+                    } else {
+                        echo "<div class='alert alert-danger'>Erreur lors du téléchargement de l'image.</div>";
+                    }
+                } else {
+                    $sql = 'UPDATE produit SET Libelle_produit = "' . $libelle . '", prix_unitaire = ' . $prix . ', image_produit = "'  . $description . '", quantite_stock =' . $quantite . ' WHERE ID_Produit =' . $id;
                     $result = mysqli_query($conn, $sql);
 
                     if ($result) {
@@ -206,8 +220,6 @@
                     } else {
                         echo "<div class='alert alert-danger'>Erreur lors de la modification du produit.</div>";
                     }
-                } else {
-                    echo "<div class='alert alert-danger'>Erreur lors du téléchargement de l'image.</div>";
                 }
             }
             ?>

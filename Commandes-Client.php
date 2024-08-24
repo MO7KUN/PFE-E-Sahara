@@ -50,6 +50,43 @@
             background-color: #ffffff;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
+        @media only screen and (max-width: 600px) {
+  table {
+    border: 0;
+  }
+ 
+  th, td {
+    display: block;
+    width: 100%;
+    text-align: left;
+  }
+ 
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+ 
+  tr {
+    border: 1px solid #ccc;
+  }
+ 
+  td {
+    border: none;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding-left: 50%;
+  }
+ 
+  td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 6px;
+    width: 45%;
+    padding-right: 10px;
+    white-space: nowrap;
+  }
+}
 
         /* Dark mode */
         .dark-mode {
