@@ -4,7 +4,6 @@ session_start();
 
 $UserName = $_SESSION['UserName'];
 
-
 // Get the count of items in the user's cart
 $countQuery = "SELECT SUM(quantite_produit) AS itemCount FROM panierproduit pp JOIN panier p ON pp.ID_Panier = p.ID_Panier WHERE p.UserName = '$UserName'";
 $countResult = mysqli_query($conn, $countQuery);
@@ -18,7 +17,7 @@ if ($countResult) {
 
 // Get product ID from URL
 $productID = $_GET['ID_Produit'] ?? null;
-$_SESSION['direction']="produit.php?ID_Produit=$productID";
+$_SESSION['direction'] = "produit.php?ID_Produit=$productID";
 
 // Fetch product information
 $productQuery = "SELECT * FROM produit WHERE ID_Produit = '$productID'";
@@ -112,7 +111,6 @@ if ($productResult) {
 
         .card img {
             border-radius: 10px 10px 0 0;
-            /* Match the card border radius */
         }
 
         .card-body {
@@ -136,7 +134,6 @@ if ($productResult) {
 
         .btn:hover {
             background-color: rgba(0, 0, 255, 0.1);
-            /* Blue color */
         }
 
         .btn-dark-mode {
@@ -152,10 +149,8 @@ if ($productResult) {
             gap: 10px;
         }
 
-        /* Email text color in dark mode */
         .dark-mode .card-text {
             color: #000000;
-            /* Black color */
         }
 
         .w-9 {
@@ -227,6 +222,38 @@ if ($productResult) {
         .dark-mode .product-title, .dark-mode .product-price, .dark-mode .product-description {
             color: #ffffff;
         }
+
+        .description-card {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode .description-card {
+            background-color: #2c2c2c;
+        }
+
+        .description-title {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .description-text {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .dark-mode .description-title, .dark-mode .description-text {
+            color: #ffffff;
+        }
+
+        .quantity-input {
+            margin-top: 10px;
+        }
     </style>
 </head>
 
@@ -275,7 +302,7 @@ if ($productResult) {
         </div>
     </header>
 
-    <div class="container mt-4">
+    <div class="container mt-4 mb-4">
         <?php if ($product) { ?>
             <div class="row">
                 <div class="col-md-6">
@@ -285,18 +312,31 @@ if ($productResult) {
                     <div class="product-details">
                         <h2 class="product-title"><?php echo $product['Libelle_produit']; ?></h2>
                         <p class="product-price"><?php echo $product['prix_unitaire'] . " Dh"; ?></p>
-                        <p class="product-description"><?php echo $product['description_produit']; ?></p>
-                        <form action="add-to-cart.php" method="get">
-                            <div class="form-group">
-                                <label for="quantity">Quantité:</label>
-                                <p id="quantity" name="quantity"><?php echo $product['quantite_stock']; ?></p>
-                            </div>
+                        <form id="add-to-cart-form" action="add-to-cart.php" method="post">
                             <input type="hidden" name="ID_Produit" value="<?php echo $product['ID_Produit']; ?>">
-                            <button type="submit" class="btn btn-success btn-block add-to-cart-btn">Ajouter au panier</button>
+                            <button type="button" class="btn btn-success btn-block add-to-cart-btn">Ajouter au panier</button>
+
+                            <!-- Quantity input will appear here -->
+                            <div id="quantity-input-container" class="quantity-input d-none">
+                                <div class="form-group">
+                                    <label for="chosenQuantity">Choisissez la quantité:</label>
+                                    <input type="number" class="form-control" name="quantite" id="chosenQuantity" min="1" max="<?php echo $product['quantite_stock']; ?>" value="1">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Confirmer l'ajout</button>
+                            </div>
                         </form>
+                    </div>
+
+                    <!-- New Description Card inside same column -->
+                    <div class="description-card mt-4">
+                        <h3 class="description-title">Description</h3>
+                        <p class="description-text">
+                            <?php echo $product['description_produit']; ?>
+                        </p>
                     </div>
                 </div>
             </div>
+
         <?php } else { ?>
             <div class="alert alert-danger" role="alert">
                 Produit non trouvé.
@@ -305,6 +345,14 @@ if ($productResult) {
     </div>
     
     <script>
+        const addToCartBtn = document.querySelector('.add-to-cart-btn');
+        const quantityInputContainer = document.getElementById('quantity-input-container');
+
+        addToCartBtn.addEventListener('click', () => {
+            // Show the quantity input when the "Ajouter au panier" button is clicked
+            quantityInputContainer.classList.remove('d-none');
+        });
+
         const btnDarkMode = document.querySelector('.btn-dark-mode');
         const body = document.body;
 

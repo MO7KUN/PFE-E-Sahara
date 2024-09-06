@@ -156,7 +156,7 @@
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_assoc($result);
     ?>
-    <div class="container mt-4">
+    <div class="container mt-4 mb-4">
         <div class="col-md-12">
             <h2 class="mb-4">Modifier un Produit</h2>
             <form action="" method="post" enctype="multipart/form-data">

@@ -37,56 +37,13 @@
             color: #000000;
         }
 
-        .light-mode header {
-            background-color: #ffffff;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
         /* Dark mode */
         .dark-mode {
             background-color: #121212;
             color: #ffffff;
         }
 
-        .dark-mode header {
-            background-color: #1f1f1f;
-            box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
-        }
-
-        .header-container {
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .search-bar-container {
-            margin: 10px 0;
-            display: flex;
-            align-items: stretch;
-        }
-
-        .input-group {
-            width: 100%;
-            margin-right: -1px;
-        }
-
-        .form-control {
-            height: calc(100% - 2px);
-            padding-top: 0.375rem;
-            padding-bottom: 0.375rem;
-            line-height: 1.5;
-        }
-
-        @media (max-width: 576px) {
-            .search-bar-container {
-                margin-top: 10px;
-            }
-
-            .nav-buttons {
-                margin-left: 0;
-            }
-        }
-
+        /* Other styles */
         .card {
             border-radius: 10px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -94,30 +51,6 @@
 
         .card img {
             border-radius: 10px 10px 0 0;
-            /* Match the card border radius */
-        }
-
-        .card-body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            color: #333;
-        }
-
-        .dark-mode td {
-            color: #fff;
-        }
-
-        .dark-mode th {
-            color: #fff;
-        }
-
-        .list-unstyled li {
-            margin-bottom: 10px;
         }
 
         .btn {
@@ -126,10 +59,8 @@
 
         .btn:hover {
             background-color: rgba(0, 0, 255, 0.1);
-            /* Blue color */
         }
 
-        /* Dark mode button */
         .btn-dark-mode {
             color: #fff;
             padding: 0.375rem 0.75rem;
@@ -164,11 +95,6 @@
                 <a href="Commandes-Client.php" class="btn btn-outline-primary mr-2">
                     <i class="fas fa-box"></i>
                 </a>
-                <?php if ($_SESSION['role_user'] == 'admin') { ?>
-                    <a href="Main-Admin.php" class="btn btn-outline-secondary mr-2">
-                        <i class="fas fa-user-shield"></i>
-                    </a>
-                <?php } ?>
                 <a href="Edit-client.php" class="btn btn-outline-warning mr-2">
                     <i class="fas fa-user-edit"></i>
                 </a>
@@ -181,8 +107,17 @@
             </div>
         </div>
     </header>
+
     <div class="container mt-5">
         <h2>Panier</h2>
+
+        <!-- Delete All Button -->
+        <div class="text-right mb-3">
+            <form action="delete_all.php" method="post">
+                <button type="submit" class="btn btn-danger">Supprimer tout</button>
+            </form>
+        </div>
+
         <table class="table">
             <thead>
                 <tr>
@@ -202,10 +137,18 @@
                     echo "<td>{$row['prix_unitaire']} Dh</td>";
                     echo "<td>{$row['quantite_produit']}</td>";
                     echo "<td>{$row['subtotal']} Dh</td>";
-                ?> <td>
-                        <form action="delete.php" method="get" class="mt-2">
+                ?>
+                    <td>
+                        <!-- Remove one piece form -->
+                        <form action="remove_one.php" method="post" class="d-inline">
                             <input type="hidden" name="ID_Produit" value="<?php echo $row['ID_Produit']; ?>">
-                            <button type="submit" class="btn btn-danger btn-block"><i class="fas fa-trash"></i></button>
+                            <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-minus-circle"></i> Retirer 1</button>
+                        </form>
+
+                        <!-- Delete entire row form -->
+                        <form action="delete.php" method="post" class="d-inline">
+                            <input type="hidden" name="ID_Produit" value="<?php echo $row['ID_Produit']; ?>">
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Supprimer</button>
                         </form>
                     </td>
                 <?php
@@ -224,9 +167,10 @@
                         }
                         echo $total;
                         ?> Dh</h4>
-            <a href="payer.php" class="btn btn-primary"><button class="btn btn-primary"><i class="fas fa-shopping-cart"></i></button></a>
+            <a href="payer.php" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Payer</a>
         </div>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             const body = document.body;
@@ -251,7 +195,6 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit-id.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 </body>
 
 </html>

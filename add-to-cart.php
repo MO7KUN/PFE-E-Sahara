@@ -1,16 +1,17 @@
 <?php
 include_once('Connection Open.php');
 session_start();
-$direction=$_SESSION['direction'];
+$direction = $_SESSION['direction'];
 
-if (isset($_GET['ID_Produit'])) {
+if (isset($_POST['ID_Produit']) && isset($_POST['quantite'])) {
     if (empty($_SESSION['UserName'])) {
-        // Redirect to login page if client is not logged in
+        // Redirect to login page if the user is not logged in
         header('Location: index.php');
         exit();
     }
 
-    $product_id = intval($_GET['ID_Produit']);
+    $product_id = intval($_POST['ID_Produit']);
+    $quantity = intval($_POST['quantite']);  // Get the selected quantity
     $username = $_SESSION['UserName'];
 
     // Check if the product is already in the cart
@@ -31,15 +32,15 @@ if (isset($_GET['ID_Produit'])) {
 
     if ($idpanier !== null) {
         // If the product is already in the cart, update the quantity
-        $updateCartQuery = "UPDATE panierproduit SET quantite_produit = quantite_produit + 1 WHERE ID_Panier = ? AND ID_Produit = ?";
+        $updateCartQuery = "UPDATE panierproduit SET quantite_produit = quantite_produit + ? WHERE ID_Panier = ? AND ID_Produit = ?";
         $stmt = $conn->prepare($updateCartQuery);
         if ($stmt === false) {
             die("Error preparing query: " . $conn->error);
         }
-        $stmt->bind_param("ii", $idpanier, $product_id);
+        $stmt->bind_param("iii", $quantity, $idpanier, $product_id);
     } else {
-        // If the product is not in the cart, add it with quantity 1
-        // Assuming we get the ID_Panier from the username or create a new cart if it doesn't exist
+        // If the product is not in the cart, add it with the chosen quantity
+        // Get the cart ID for the user or create a new cart if it doesn't exist
         $getCartIdQuery = "SELECT ID_Panier FROM panier WHERE UserName = ?";
         $stmt = $conn->prepare($getCartIdQuery);
         if ($stmt === false) {
@@ -69,19 +70,21 @@ if (isset($_GET['ID_Produit'])) {
             $stmt->close();
         }
 
-        $addCartQuery = "INSERT INTO panierproduit (ID_Panier, ID_Produit, quantite_produit) VALUES (?, ?, 1)";
+        // Add the product to the cart with the selected quantity
+        $addCartQuery = "INSERT INTO panierproduit (ID_Panier, ID_Produit, quantite_produit) VALUES (?, ?, ?)";
         $stmt = $conn->prepare($addCartQuery);
         if ($stmt === false) {
             die("Error preparing query: " . $conn->error);
         }
-        $stmt->bind_param("ii", $idpanier, $product_id);
+        $stmt->bind_param("iii", $idpanier, $product_id, $quantity);
     }
 
+    // Execute the prepared statement
     if ($stmt->execute()) {
-        // Redirect back to the main page or product page with success message
+        // Redirect back to the product page with a success message
         header("Location: $direction?status=success");
     } else {
-        // Redirect back to the main page or product page with error message
+        // Redirect back to the product page with an error message
         header("Location: $direction?status=error");
     }
 

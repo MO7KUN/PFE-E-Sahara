@@ -2,35 +2,19 @@
 include_once('Connection Open.php');
 session_start();
 
-if (isset($_GET['ID_Produit'])) {
-    $ID_Produit = $_GET['ID_Produit'];
-    $UserName = $_SESSION['UserName'];
+$UserName = $_SESSION['UserName'];
+$productID = intval($_POST['ID_Produit']);
 
-    // Retrieve the cart ID for the current user
-    $cartQuery = "SELECT ID_Panier FROM panier WHERE UserName = '$UserName'";
-    $cartResult = mysqli_query($conn, $cartQuery);
+// Delete the product from the cart
+$deleteQuery = "DELETE FROM panierproduit USING panierproduit INNER JOIN panier ON panierproduit.ID_Panier = panier.ID_Panier 
+                WHERE panier.UserName = ? AND panierproduit.ID_Produit = ?";
+$stmt = $conn->prepare($deleteQuery);
+$stmt->bind_param("si", $UserName, $productID);
 
-    if ($cartResult && mysqli_num_rows($cartResult) > 0) {
-        $cartRow = mysqli_fetch_assoc($cartResult);
-        $ID_Panier = $cartRow['ID_Panier'];
-
-        // Delete the product from the cart
-        $deleteQuery = "DELETE FROM panierproduit WHERE ID_Produit = '$ID_Produit' AND ID_Panier = '$ID_Panier'";
-        $deleteResult = mysqli_query($conn, $deleteQuery);
-
-        if ($deleteResult) {
-            header("Location: Panier.php");
-            exit();
-        } else {
-            echo "Error: " . mysqli_error($conn);
-        }
-    } else {
-        echo "Cart not found for user.";
-    }
+if ($stmt->execute()) {
+    header("Location: Panier.php?status=deleted");
 } else {
-    echo "No product ID specified.";
+    header("Location: Panier.php?status=error");
 }
-
-// Close the database connection
+$stmt->close();
 mysqli_close($conn);
-?>
